@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Flame, Check, MoreVertical, Edit2, Trash2 } from 'lucide-react';
+import { Flame, Check, MoreVertical, Edit2, Trash2, Trophy } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export default function HabitCard({ habit, isCompleted, onToggle, onEdit, onDelete }) {
+export default function HabitCard({ habit, isCompleted, onToggle, onEdit, onDelete, onSetChallenge }) {
   return (
     <motion.div
       layout
@@ -34,6 +34,12 @@ export default function HabitCard({ habit, isCompleted, onToggle, onEdit, onDele
               <Edit2 className="w-4 h-4 mr-2" />
               Edit
             </DropdownMenuItem>
+            {onSetChallenge && (
+              <DropdownMenuItem onClick={onSetChallenge} className="cursor-pointer">
+                <Trophy className="w-4 h-4 mr-2" />
+                Set Challenge
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={onDelete} className="cursor-pointer text-red-500 focus:text-red-500">
               <Trash2 className="w-4 h-4 mr-2" />
               Delete

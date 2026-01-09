@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { format } from 'date-fns';
+import { format, startOfWeek, endOfWeek, isMonday } from 'date-fns';
 import { motion } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 
@@ -10,10 +10,30 @@ import HabitQuickView from '../components/dashboard/HabitQuickView';
 import QuickStats from '../components/dashboard/QuickStats';
 import RecentJournal from '../components/dashboard/RecentJournal';
 import ResourcesSection from '../components/dashboard/ResourcesSection';
+import WeeklyReviewPrompt from '../components/weekly-review/WeeklyReviewPrompt';
 
 export default function Dashboard() {
   const queryClient = useQueryClient();
   const today = format(new Date(), 'yyyy-MM-dd');
+  const [showWeeklyReview, setShowWeeklyReview] = useState(false);
+
+  // Check if weekly review is needed
+  const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
+  
+  const { data: weeklySummaries = [] } = useQuery({
+    queryKey: ['weeklySummaries'],
+    queryFn: () => base44.entities.WeeklySummary.list('-week_start', 1),
+  });
+
+  useEffect(() => {
+    // Show weekly review prompt on Mondays if not completed this week
+    if (isMonday(new Date())) {
+      const hasThisWeekSummary = weeklySummaries.some(s => s.week_start === weekStart);
+      if (!hasThisWeekSummary) {
+        setShowWeeklyReview(true);
+      }
+    }
+  }, [weeklySummaries, weekStart]);
 
   // Queries
   const { data: habits = [] } = useQuery({
@@ -137,6 +157,14 @@ export default function Dashboard() {
         </h1>
         <p className="text-[#666666] mt-1">Let's make today count.</p>
       </motion.div>
+
+      {/* Weekly Review Prompt */}
+      {showWeeklyReview && (
+        <WeeklyReviewPrompt 
+          onComplete={() => setShowWeeklyReview(false)}
+          onDismiss={() => setShowWeeklyReview(false)}
+        />
+      )}
 
       {/* Quick Stats */}
       <div className="mb-8">

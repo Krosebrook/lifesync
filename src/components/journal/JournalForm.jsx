@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
-import { X, Plus, Sparkles } from 'lucide-react';
+import { X, Plus, Sparkles, RefreshCw } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 import Card from '../shared/Card';
 import Button from '../shared/Button';
 import MoodSelector from '../shared/MoodSelector';
@@ -12,6 +13,9 @@ const entryTypes = [
   { value: 'free_write', label: 'Free Write', emoji: '✍️' },
   { value: 'weekly_review', label: 'Weekly Review', emoji: '📊' }
 ];
+
+const [aiPrompts, setAiPrompts] = useState(null);
+const [loadingPrompts, setLoadingPrompts] = useState(false);
 
 const promptsByType = {
   reflection: [
@@ -34,6 +38,22 @@ const promptsByType = {
     "What could you have done better?",
     "What are your intentions for next week?"
   ]
+};
+
+const loadAIPrompts = async () => {
+  setLoadingPrompts(true);
+  try {
+    const response = await base44.functions.invoke('generateJournalPrompts', {
+      entry_type: formData.type
+    });
+    if (response.data.success) {
+      setAiPrompts(response.data.prompts);
+    }
+  } catch (error) {
+    console.error('Error loading AI prompts:', error);
+  } finally {
+    setLoadingPrompts(false);
+  }
 };
 
 export default function JournalForm({ entry, onSave, onCancel }) {
@@ -69,7 +89,14 @@ export default function JournalForm({ entry, onSave, onCancel }) {
     onSave(formData);
   };
 
-  const currentPrompts = promptsByType[formData.type];
+  const currentPrompts = aiPrompts || promptsByType[formData.type];
+
+  useEffect(() => {
+    // Load AI prompts when entry type changes
+    if (!entry) {
+      loadAIPrompts();
+    }
+  }, [formData.type]);
 
   return (
     <motion.div
@@ -153,15 +180,34 @@ export default function JournalForm({ entry, onSave, onCancel }) {
 
             {/* Writing Prompts */}
             <div className="p-4 bg-[#1ABC9C]/5 rounded-[12px]">
-              <div className="flex items-center gap-2 mb-3">
-                <Sparkles className="w-4 h-4 text-[#1ABC9C]" />
-                <span className="text-sm font-medium text-[#1ABC9C]">Writing prompts</span>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-[#1ABC9C]" />
+                  <span className="text-sm font-medium text-[#1ABC9C]">
+                    {aiPrompts ? 'Personalized prompts for you' : 'Writing prompts'}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={loadAIPrompts}
+                  disabled={loadingPrompts}
+                  className="text-[#1ABC9C] hover:text-[#16A085] transition-colors disabled:opacity-50"
+                  title="Generate new prompts"
+                >
+                  <RefreshCw className={`w-4 h-4 ${loadingPrompts ? 'animate-spin' : ''}`} />
+                </button>
               </div>
-              <ul className="space-y-1">
-                {currentPrompts.map((prompt, index) => (
-                  <li key={index} className="text-sm text-[#666666]">• {prompt}</li>
-                ))}
-              </ul>
+              {loadingPrompts ? (
+                <div className="flex items-center justify-center py-4">
+                  <RefreshCw className="w-5 h-5 text-[#1ABC9C] animate-spin" />
+                </div>
+              ) : (
+                <ul className="space-y-1">
+                  {currentPrompts.map((prompt, index) => (
+                    <li key={index} className="text-sm text-[#666666]">• {prompt}</li>
+                  ))}
+                </ul>
+              )}
             </div>
 
             {/* Content */}

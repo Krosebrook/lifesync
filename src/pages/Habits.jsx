@@ -1,21 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format, subDays } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Target, Flame } from 'lucide-react';
+import { Plus, Target, Flame, Trophy } from 'lucide-react';
 
 import Card from '../components/shared/Card';
 import Button from '../components/shared/Button';
 import HabitCard from '../components/habits/HabitCard';
 import HabitForm from '../components/habits/HabitForm';
 import WeeklyCalendar from '../components/habits/WeeklyCalendar';
+import ChallengeCard from '../components/habits/ChallengeCard';
+import ChallengeForm from '../components/habits/ChallengeForm';
+import StreakCelebration from '../components/celebration/StreakCelebration';
 
 export default function Habits() {
   const queryClient = useQueryClient();
   const today = format(new Date(), 'yyyy-MM-dd');
   const [showForm, setShowForm] = useState(false);
   const [editingHabit, setEditingHabit] = useState(null);
+  const [showChallengeForm, setShowChallengeForm] = useState(false);
+  const [challengeHabit, setChallengeHabit] = useState(null);
+  const [celebration, setCelebration] = useState(null);
 
   // Queries
   const { data: habits = [] } = useQuery({
@@ -42,6 +48,11 @@ export default function Habits() {
       const allLogs = await base44.entities.HabitLog.list('-date', 100);
       return allLogs.filter(log => last7Days.includes(log.date));
     },
+  });
+
+  const { data: challenges = [] } = useQuery({
+    queryKey: ['challenges'],
+    queryFn: () => base44.entities.Challenge.list(),
   });
 
   // Mutations
@@ -76,6 +87,20 @@ export default function Habits() {
     onSuccess: () => queryClient.invalidateQueries(['habitLogs']),
   });
 
+  const createChallengeMutation = useMutation({
+    mutationFn: (data) => base44.entities.Challenge.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['challenges']);
+      setShowChallengeForm(false);
+      setChallengeHabit(null);
+    },
+  });
+
+  const updateChallengeMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Challenge.update(id, data),
+    onSuccess: () => queryClient.invalidateQueries(['challenges']),
+  });
+
   const handleToggleHabit = async (habitId) => {
     const existingLog = todayLogs.find(log => log.habit_id === habitId);
     const habit = habits.find(h => h.id === habitId);
@@ -101,6 +126,29 @@ export default function Habits() {
             longest_streak: Math.max(newStreak, habit.longest_streak || 0)
           }
         });
+
+        // Check for milestone celebrations
+        if ([7, 14, 30, 60, 100].includes(newStreak)) {
+          setCelebration({ streak: newStreak, habitName: habit.name });
+        }
+
+        // Update active challenges
+        const activeChallenge = challenges.find(c => 
+          c.habit_id === habitId && c.status === 'active'
+        );
+        if (activeChallenge) {
+          const newProgress = activeChallenge.current_progress + 1;
+          const isCompleted = newProgress >= activeChallenge.goal_days;
+          
+          await updateChallengeMutation.mutateAsync({
+            id: activeChallenge.id,
+            data: {
+              current_progress: newProgress,
+              status: isCompleted ? 'completed' : 'active',
+              completion_date: isCompleted ? today : null
+            }
+          });
+        }
       }
     }
   };
@@ -156,6 +204,30 @@ export default function Habits() {
         <WeeklyCalendar logs={weekLogs} habits={activeHabits} />
       </div>
 
+      {/* Active Challenges */}
+      {challenges.filter(c => c.status === 'active').length > 0 && (
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Trophy className="w-6 h-6 text-[#1ABC9C]" />
+              <h2 className="text-xl font-semibold text-[#1A1A1A]">Active Challenges</h2>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {challenges
+              .filter(c => c.status === 'active')
+              .map(challenge => (
+                <ChallengeCard
+                  key={challenge.id}
+                  challenge={challenge}
+                  habit={habits.find(h => h.id === challenge.habit_id)}
+                  onView={() => {}}
+                />
+              ))}
+          </div>
+        </div>
+      )}
+
       {/* Habits Grid */}
       {activeHabits.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -168,6 +240,10 @@ export default function Habits() {
                 onToggle={() => handleToggleHabit(habit.id)}
                 onEdit={() => setEditingHabit(habit)}
                 onDelete={() => deleteHabitMutation.mutate(habit.id)}
+                onSetChallenge={() => {
+                  setChallengeHabit(habit);
+                  setShowChallengeForm(true);
+                }}
               />
             ))}
           </AnimatePresence>
@@ -202,6 +278,31 @@ export default function Habits() {
               setShowForm(false);
               setEditingHabit(null);
             }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Challenge Form Modal */}
+      <AnimatePresence>
+        {showChallengeForm && challengeHabit && (
+          <ChallengeForm
+            habit={challengeHabit}
+            onSave={(data) => createChallengeMutation.mutate(data)}
+            onCancel={() => {
+              setShowChallengeForm(false);
+              setChallengeHabit(null);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Streak Celebration */}
+      <AnimatePresence>
+        {celebration && (
+          <StreakCelebration
+            streak={celebration.streak}
+            habitName={celebration.habitName}
+            onClose={() => setCelebration(null)}
           />
         )}
       </AnimatePresence>
