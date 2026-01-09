@@ -14,9 +14,6 @@ const entryTypes = [
   { value: 'weekly_review', label: 'Weekly Review', emoji: '📊' }
 ];
 
-const [aiPrompts, setAiPrompts] = useState(null);
-const [loadingPrompts, setLoadingPrompts] = useState(false);
-
 const promptsByType = {
   reflection: [
     "What was the highlight of your day?",
@@ -40,22 +37,6 @@ const promptsByType = {
   ]
 };
 
-const loadAIPrompts = async () => {
-  setLoadingPrompts(true);
-  try {
-    const response = await base44.functions.invoke('generateJournalPrompts', {
-      entry_type: formData.type
-    });
-    if (response.data.success) {
-      setAiPrompts(response.data.prompts);
-    }
-  } catch (error) {
-    console.error('Error loading AI prompts:', error);
-  } finally {
-    setLoadingPrompts(false);
-  }
-};
-
 export default function JournalForm({ entry, onSave, onCancel }) {
   const [formData, setFormData] = useState({
     date: entry?.date || format(new Date(), 'yyyy-MM-dd'),
@@ -69,6 +50,24 @@ export default function JournalForm({ entry, onSave, onCancel }) {
 
   const [newGratitude, setNewGratitude] = useState('');
   const [newTag, setNewTag] = useState('');
+  const [aiPrompts, setAiPrompts] = useState(null);
+  const [loadingPrompts, setLoadingPrompts] = useState(false);
+
+  const loadAIPrompts = async () => {
+    setLoadingPrompts(true);
+    try {
+      const response = await base44.functions.invoke('generateJournalPrompts', {
+        entry_type: formData.type
+      });
+      if (response.data.success) {
+        setAiPrompts(response.data.prompts);
+      }
+    } catch (error) {
+      console.error('Error loading AI prompts:', error);
+    } finally {
+      setLoadingPrompts(false);
+    }
+  };
 
   const addGratitude = () => {
     if (newGratitude.trim() && formData.gratitude.length < 5) {
