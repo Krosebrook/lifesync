@@ -34,6 +34,7 @@ export default function Layout({ children, currentPageName }) {
     { name: 'Habits', icon: Target, page: 'Habits' },
     { name: 'Journal', icon: BookOpen, page: 'Journal' },
     { name: 'Progress', icon: Award, page: 'Progress' },
+    { name: 'Achievements', icon: Award, page: 'Achievements' },
     { name: 'Settings', icon: Settings, page: 'Settings' },
   ];
 
