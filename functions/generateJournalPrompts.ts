@@ -26,49 +26,103 @@ Deno.serve(async (req) => {
       return date.toISOString().split('T')[0];
     });
 
-    const habitPerformance = habits.map(habit => {
+    // Map habits to their associated values and goals
+    const habitsWithContext = habits.map(habit => {
+      const goal = goals.find(g => g.id === habit.goal_id);
+      const value = goal ? values.find(v => v.id === goal.value_id) : null;
       const completions = recentLogs.filter(
         log => log.habit_id === habit.id && last7Days.includes(log.date) && log.completed
       ).length;
       return {
         name: habit.name,
-        completionRate: Math.round((completions / 7) * 100)
+        completionRate: Math.round((completions / 7) * 100),
+        valueName: value?.name || null,
+        goalTitle: goal?.title || null
       };
     });
 
-    // Find recently completed goals
-    const recentlyCompletedGoals = goals.filter(g => g.status === 'completed');
+    // Find struggling habits grouped by value
+    const strugglingByValue = {};
+    habitsWithContext
+      .filter(h => h.completionRate < 50)
+      .forEach(habit => {
+        const val = habit.valueName || 'General';
+        if (!strugglingByValue[val]) strugglingByValue[val] = [];
+        strugglingByValue[val].push(habit);
+      });
 
-    // Find struggling areas (habits < 50% completion)
-    const strugglingHabits = habitPerformance.filter(h => h.completionRate < 50);
+    // Find recently completed goals (within last 14 days)
+    const twoWeeksAgo = new Date();
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+    const recentlyCompletedGoals = goals.filter(g => {
+      if (g.status !== 'completed') return false;
+      const goalDate = new Date(g.updated_date);
+      return goalDate >= twoWeeksAgo;
+    });
 
-    // Build AI context
-    const context = `
-Generate 3 personalized journal prompts for a ${entry_type} entry.
+    // Build AI context with deeper value connections
+    let contextParts = [
+      `Generate 3 personalized journal prompts for a ${entry_type} entry.`,
+      '',
+      `User's Core Values: ${values.map(v => `${v.name}${v.description ? ` (${v.description})` : ''}`).join(', ')}`
+    ];
 
-User's Core Values: ${values.map(v => v.name).join(', ')}
+    // Add active goals with value connections
+    const activeGoals = goals.filter(g => g.status === 'active');
+    if (activeGoals.length > 0) {
+      contextParts.push('', 'Active Goals:');
+      activeGoals.forEach(g => {
+        const value = values.find(v => v.id === g.value_id);
+        contextParts.push(`- ${g.title} (${g.progress}% complete)${value ? ` - Connected to ${value.name}` : ''}`);
+      });
+    }
 
-Active Goals:
-${goals.filter(g => g.status === 'active').map(g => `- ${g.title} (${g.progress}% complete)`).join('\n')}
+    // Add struggling habits with value context
+    if (Object.keys(strugglingByValue).length > 0) {
+      contextParts.push('', 'Areas Needing Attention:');
+      for (const [valueName, habits] of Object.entries(strugglingByValue)) {
+        const habitNames = habits.map(h => h.name).join(', ');
+        contextParts.push(`- ${valueName} value: ${habitNames} (${habits[0].completionRate}% completion this week)`);
+      }
+    }
 
-Recent Habit Performance:
-${habitPerformance.map(h => `- ${h.name}: ${h.completionRate}% completion`).join('\n')}
+    // Add thriving habits for positive reinforcement
+    const thrivingHabits = habitsWithContext.filter(h => h.completionRate >= 80);
+    if (thrivingHabits.length > 0) {
+      contextParts.push('', 'Strengths to Build On:');
+      thrivingHabits.slice(0, 3).forEach(h => {
+        contextParts.push(`- ${h.name} (${h.completionRate}% completion)${h.valueName ? ` - Supporting ${h.valueName}` : ''}`);
+      });
+    }
 
-${strugglingHabits.length > 0 ? `Habits needing attention: ${strugglingHabits.map(h => h.name).join(', ')}` : ''}
+    // Add recently completed goals with celebration
+    if (recentlyCompletedGoals.length > 0) {
+      contextParts.push('', 'Recent Achievements:');
+      recentlyCompletedGoals.forEach(g => {
+        const value = values.find(v => v.id === g.value_id);
+        contextParts.push(`- Completed: ${g.title}${value ? ` (${value.name} value)` : ''}`);
+      });
+    }
 
-${recentlyCompletedGoals.length > 0 ? `Recently completed goals: ${recentlyCompletedGoals.map(g => g.title).join(', ')}` : ''}
+    // Add recent journal themes
+    const recentThemes = recentEntries.slice(0, 3).map(e => e.title || 'general reflection');
+    if (recentThemes.length > 0) {
+      contextParts.push('', `Recent journal themes: ${recentThemes.join(', ')}`);
+    }
 
-Recent journal themes: ${recentEntries.slice(0, 3).map(e => e.title || 'reflection').join(', ')}
+    contextParts.push('', 'Create prompts that:');
+    contextParts.push('1. Directly reference their specific core values by name');
+    contextParts.push('2. If habits are struggling in a value area, ask compassionate questions about overcoming challenges in that value');
+    contextParts.push('3. For recently completed goals, celebrate and prompt for new ambitious goals aligned with that value');
+    contextParts.push('4. For thriving habits, ask how to expand or deepen that practice');
+    contextParts.push(`5. Match the ${entry_type} entry type`);
+    contextParts.push('6. Be specific, personal, warm, and actionable');
+    contextParts.push('', 'Example formats:');
+    contextParts.push('- "Your [Value Name] value is important to you. Given that [Habit] has been challenging this week, what\'s one small step..."');
+    contextParts.push('- "You recently completed [Goal]. What new, ambitious goal in [Value] excites you now?"');
+    contextParts.push('- "You\'ve been consistent with [Habit]. How could you deepen this practice to further embody [Value]?"');
 
-Create prompts that:
-1. Connect to their values
-2. Address struggling areas with encouragement
-3. Build on recent successes
-4. Are specific and actionable
-5. Match the ${entry_type} entry type
-
-Make them warm, personal, and motivating.
-    `.trim();
+    const context = contextParts.join('\n');
 
     const aiResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt: context,
