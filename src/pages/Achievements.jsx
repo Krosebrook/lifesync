@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Trophy, Lock } from 'lucide-react';
 
-import { ALL_ACHIEVEMENTS, CATEGORY_ICONS } from '../constants/achievements';
+import { ALL_ACHIEVEMENTS, CATEGORY_ICONS } from '../components/achievements/achievementConstants';
 import OverallProgress from '../components/achievements/OverallProgress';
 import AchievementGrid from '../components/achievements/AchievementGrid';
 import UnlockedAchievement from '../components/achievements/UnlockedAchievement';
