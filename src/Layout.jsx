@@ -31,6 +31,7 @@ export default function Layout({ children, currentPageName }) {
 
   const navItems = [
     { name: 'Dashboard', icon: Home, page: 'Dashboard' },
+    { name: 'Goals', icon: Target, page: 'Goals' },
     { name: 'Habits', icon: Target, page: 'Habits' },
     { name: 'Journal', icon: BookOpen, page: 'Journal' },
     { name: 'Progress', icon: Award, page: 'Progress' },

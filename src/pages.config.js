@@ -5,6 +5,7 @@ import Journal from './pages/Journal';
 import Onboarding from './pages/Onboarding';
 import Progress from './pages/Progress';
 import Settings from './pages/Settings';
+import Goals from './pages/Goals';
 import __Layout from './Layout.jsx';
 
 
@@ -16,6 +17,7 @@ export const PAGES = {
     "Onboarding": Onboarding,
     "Progress": Progress,
     "Settings": Settings,
+    "Goals": Goals,
 }
 
 export const pagesConfig = {
