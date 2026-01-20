@@ -13,6 +13,7 @@ import WeeklyCalendar from '../components/habits/WeeklyCalendar';
 import ChallengeCard from '../components/habits/ChallengeCard';
 import ChallengeForm from '../components/habits/ChallengeForm';
 import StreakCelebration from '../components/celebration/StreakCelebration';
+import HabitSuggestions from '../components/habits/HabitSuggestions';
 
 export default function Habits() {
   const queryClient = useQueryClient();
@@ -22,6 +23,9 @@ export default function Habits() {
   const [showChallengeForm, setShowChallengeForm] = useState(false);
   const [challengeHabit, setChallengeHabit] = useState(null);
   const [celebration, setCelebration] = useState(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
   // Queries
   const { data: habits = [] } = useQuery({
@@ -32,6 +36,11 @@ export default function Habits() {
   const { data: goals = [] } = useQuery({
     queryKey: ['goals'],
     queryFn: () => base44.entities.Goal.list(),
+  });
+
+  const { data: values = [] } = useQuery({
+    queryKey: ['values'],
+    queryFn: () => base44.entities.Value.list(),
   });
 
   const { data: todayLogs = [] } = useQuery({
@@ -154,6 +163,39 @@ export default function Habits() {
   };
 
   const [selectedCategory, setSelectedCategory] = useState('all');
+
+  const loadAISuggestions = async () => {
+    setLoadingSuggestions(true);
+    try {
+      const response = await base44.functions.invoke('generateHabitSuggestions', {});
+      if (response.data.success) {
+        setSuggestions(response.data.suggestions);
+        setShowSuggestions(true);
+      } else {
+        alert(response.data.error || 'Failed to generate suggestions');
+      }
+    } catch (error) {
+      console.error('Error loading suggestions:', error);
+      alert('Failed to generate suggestions');
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  };
+
+  const handleAcceptSuggestion = (suggestion) => {
+    setShowSuggestions(false);
+    const habitData = {
+      name: suggestion.name,
+      description: suggestion.description,
+      category: suggestion.category,
+      done_criteria: suggestion.done_criteria,
+      frequency: suggestion.frequency,
+      times_per_week: suggestion.times_per_week,
+      icon: suggestion.icon,
+      color: '#1ABC9C'
+    };
+    createHabitMutation.mutate(habitData);
+  };
   
   const activeHabits = habits.filter(h => h.is_active);
   const filteredHabits = selectedCategory === 'all' 
@@ -182,9 +224,19 @@ export default function Habits() {
           <h1 className="text-3xl md:text-4xl font-semibold text-[#1A1A1A]">Habits</h1>
           <p className="text-[#666666] mt-1">Build routines that align with your values</p>
         </div>
-        <Button onClick={() => setShowForm(true)} icon={Plus}>
-          Add Habit
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => setShowForm(true)} icon={Plus}>
+            Add Habit
+          </Button>
+          <Button 
+            onClick={loadAISuggestions}
+            variant="outline"
+            icon={Sparkles}
+            loading={loadingSuggestions}
+          >
+            Get AI Suggestions
+          </Button>
+        </div>
       </div>
 
       {/* Stats Row */}
@@ -335,6 +387,18 @@ export default function Habits() {
               setShowChallengeForm(false);
               setChallengeHabit(null);
             }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Habit Suggestions */}
+      <AnimatePresence>
+        {showSuggestions && suggestions.length > 0 && (
+          <HabitSuggestions
+            suggestions={suggestions}
+            values={values}
+            onAccept={handleAcceptSuggestion}
+            onClose={() => setShowSuggestions(false)}
           />
         )}
       </AnimatePresence>
