@@ -11,6 +11,7 @@ import QuickStats from '../components/dashboard/QuickStats';
 import RecentJournal from '../components/dashboard/RecentJournal';
 import ResourcesSection from '../components/dashboard/ResourcesSection';
 import WeeklyReviewPrompt from '../components/weekly-review/WeeklyReviewPrompt';
+import { Award } from 'lucide-react';
 
 export default function Dashboard() {
   const queryClient = useQueryClient();

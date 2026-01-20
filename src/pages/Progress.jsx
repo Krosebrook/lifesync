@@ -55,9 +55,24 @@ export default function Progress() {
     queryFn: () => base44.entities.UserProfile.list(),
   });
 
+  const { data: gamificationProfiles = [] } = useQuery({
+    queryKey: ['gamificationProfile'],
+    queryFn: () => base44.entities.GamificationProfile.list(),
+  });
+
   const createAchievementMutation = useMutation({
     mutationFn: (data) => base44.entities.Achievement.create(data),
     onSuccess: () => queryClient.invalidateQueries(['achievements']),
+  });
+
+  const updateGamificationMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.GamificationProfile.update(id, data),
+    onSuccess: () => queryClient.invalidateQueries(['gamificationProfile']),
+  });
+
+  const createGamificationMutation = useMutation({
+    mutationFn: (data) => base44.entities.GamificationProfile.create(data),
+    onSuccess: () => queryClient.invalidateQueries(['gamificationProfile']),
   });
 
   // Calculate stats
@@ -160,12 +175,123 @@ export default function Progress() {
   const unlockedNames = achievements.map(a => a.name);
   const lockedAchievements = potentialAchievements.filter(a => !unlockedNames.includes(a.name));
 
+  // Gamification system
+  const gamProfile = gamificationProfiles[0];
+  const totalPoints = gamProfile?.total_points || 0;
+  const level = gamProfile?.level || 1;
+  const pointsToNext = gamProfile?.points_to_next_level || 100;
+  const progressToNext = Math.min((totalPoints % pointsToNext) / pointsToNext * 100, 100);
+
+  // Award points for achievements
+  useEffect(() => {
+    const awardPoints = async () => {
+      if (!gamProfile && gamificationProfiles.length === 0 && (habits.length > 0 || journalEntries.length > 0)) {
+        await createGamificationMutation.mutateAsync({
+          total_points: 0,
+          level: 1,
+          points_to_next_level: 100
+        });
+        return;
+      }
+
+      if (!gamProfile) return;
+
+      let pointsEarned = 0;
+      const badgesEarned = gamProfile.badges_earned || [];
+      
+      // Award points for new achievements
+      achievements.forEach(a => {
+        if (!badgesEarned.includes(a.id)) {
+          if (a.type === 'streak') pointsEarned += 50;
+          else if (a.type === 'milestone') pointsEarned += 25;
+          else if (a.type === 'badge') pointsEarned += 100;
+          badgesEarned.push(a.id);
+        }
+      });
+
+      // Daily login points
+      const lastLogin = gamProfile.last_login_date;
+      const today = format(new Date(), 'yyyy-MM-dd');
+      if (lastLogin !== today) {
+        pointsEarned += 10;
+      }
+
+      if (pointsEarned > 0) {
+        const newTotal = totalPoints + pointsEarned;
+        const newLevel = Math.floor(newTotal / 100) + 1;
+        
+        await updateGamificationMutation.mutateAsync({
+          id: gamProfile.id,
+          data: {
+            total_points: newTotal,
+            level: newLevel,
+            points_to_next_level: 100,
+            badges_earned: badgesEarned,
+            last_login_date: today
+          }
+        });
+      }
+    };
+
+    awardPoints();
+  }, [achievements.length, gamProfile?.id]);
+
   return (
     <div className="p-6 md:p-8">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl md:text-4xl font-semibold text-[#1A1A1A]">Progress</h1>
         <p className="text-[#666666] mt-1">Track your growth and celebrate your wins</p>
+      </div>
+
+      {/* Gamification Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <Card>
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-sm text-[#666666]">Level</p>
+              <p className="text-3xl font-bold text-[#1ABC9C]">{level}</p>
+            </div>
+            <div className="w-12 h-12 bg-[#1ABC9C]/10 rounded-full flex items-center justify-center">
+              <TrendingUp className="w-6 h-6 text-[#1ABC9C]" />
+            </div>
+          </div>
+          <div className="w-full bg-[#E5D9CC] rounded-full h-2">
+            <div 
+              className="bg-[#1ABC9C] h-2 rounded-full transition-all"
+              style={{ width: `${progressToNext}%` }}
+            />
+          </div>
+          <p className="text-xs text-[#666666] mt-1">
+            {Math.floor(totalPoints % pointsToNext)} / {pointsToNext} XP to next level
+          </p>
+        </Card>
+
+        <Card>
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-sm text-[#666666]">Total Points</p>
+              <p className="text-3xl font-bold text-[#F39C12]">{totalPoints}</p>
+            </div>
+            <div className="w-12 h-12 bg-[#F39C12]/10 rounded-full flex items-center justify-center">
+              <Award className="w-6 h-6 text-[#F39C12]" />
+            </div>
+          </div>
+          <p className="text-xs text-[#666666]">XP earned from achievements</p>
+        </Card>
+
+        <Card>
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-sm text-[#666666]">Badges Earned</p>
+              <p className="text-3xl font-bold text-[#9B59B6]">{achievements.length}</p>
+            </div>
+            <div className="w-12 h-12 bg-[#9B59B6]/10 rounded-full flex items-center justify-center">
+              <Trophy className="w-6 h-6 text-[#9B59B6]" />
+            </div>
+          </div>
+          <p className="text-xs text-[#666666]">{lockedAchievements.length} more to unlock</p>
+        </Card>
       </div>
 
       {/* Key Metrics */}
