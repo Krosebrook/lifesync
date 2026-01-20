@@ -154,6 +154,20 @@ export default function Habits() {
   };
 
   const activeHabits = habits.filter(h => h.is_active);
+  const filteredHabits = selectedCategory === 'all' 
+    ? activeHabits 
+    : activeHabits.filter(h => h.category === selectedCategory);
+
+  const categories = [
+    { value: 'all', label: 'All', icon: '📋' },
+    { value: 'health', label: 'Health', icon: '💪' },
+    { value: 'productivity', label: 'Productivity', icon: '⚡' },
+    { value: 'mindfulness', label: 'Mindfulness', icon: '🧘' },
+    { value: 'learning', label: 'Learning', icon: '📚' },
+    { value: 'relationships', label: 'Relationships', icon: '❤️' },
+    { value: 'finance', label: 'Finance', icon: '💰' },
+    { value: 'other', label: 'Other', icon: '✨' }
+  ];
   const completedToday = activeHabits.filter(h => 
     todayLogs.some(log => log.habit_id === h.id && log.completed)
   ).length;

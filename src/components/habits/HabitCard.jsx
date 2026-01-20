@@ -60,9 +60,23 @@ export default function HabitCard({ habit, isCompleted, onToggle, onEdit, onDele
             {habit.icon || '✨'}
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className={`font-semibold text-lg mb-1 ${isCompleted ? 'text-white' : 'text-[#1A1A1A]'}`}>
-              {habit.name}
-            </h3>
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className={`font-semibold text-lg ${isCompleted ? 'text-white' : 'text-[#1A1A1A]'}`}>
+                {habit.name}
+              </h3>
+              {habit.category && habit.category !== 'other' && (
+                <span className={`text-xs px-2 py-0.5 rounded-full capitalize ${
+                  isCompleted ? 'bg-white/20 text-white' : 'bg-[#F0E5D8] text-[#666666]'
+                }`}>
+                  {habit.category}
+                </span>
+              )}
+            </div>
+            {habit.done_criteria && (
+              <p className={`text-xs mb-1 ${isCompleted ? 'text-white/70' : 'text-[#999999]'}`}>
+                ✓ {habit.done_criteria}
+              </p>
+            )}
             {habit.description && (
               <p className={`text-sm mb-3 line-clamp-2 ${isCompleted ? 'text-white/80' : 'text-[#666666]'}`}>
                 {habit.description}
