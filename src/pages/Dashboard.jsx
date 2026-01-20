@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import { Sparkles, Moon, Sun, Sunset, Award, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from './utils';
+import { createPageUrl } from '../utils';
 
 import Card from '../components/shared/Card';
 import Button from '../components/shared/Button';
