@@ -32,16 +32,16 @@ export default function Layout({ children, currentPageName }) {
 
   const navItems = [
     { name: 'Dashboard', icon: Home, page: 'Dashboard' },
+    { name: 'Coach', icon: Sparkles, page: 'Coach' },
     { name: 'Goals', icon: Target, page: 'Goals' },
     { name: 'Habits', icon: Target, page: 'Habits' },
     { name: 'Journal', icon: BookOpen, page: 'Journal' },
-    { name: 'Insights', icon: Sparkles, page: 'JournalAnalysis' },
     { name: 'Friends', icon: Users, page: 'Accountability' },
     { name: 'Progress', icon: Award, page: 'Progress' },
     { name: 'Settings', icon: Settings, page: 'Settings' },
   ];
 
-  const hideNav = currentPageName === 'Onboarding';
+  const hideNav = currentPageName === 'Onboarding' || currentPageName === 'Coach';
 
   return (
     <div className="min-h-screen bg-[#F0E5D8]" style={{ fontFamily: "'Open Sans', sans-serif" }}>
