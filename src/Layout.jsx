@@ -44,20 +44,22 @@ export default function Layout({ children, currentPageName }) {
   const hideNav = currentPageName === 'Onboarding' || currentPageName === 'Coach';
 
   return (
-    <div className="min-h-screen bg-[#F0E5D8]" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+    <div className="min-h-screen bg-[#0A0E27]" style={{ fontFamily: "'Inter', sans-serif" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap');
         
         :root {
-          --primary-bg: #F0E5D8;
-          --card-bg: #FFFFFF;
-          --card-bg-alt: #FAFAFA;
-          --accent: #1ABC9C;
-          --accent-light: rgba(26, 188, 156, 0.1);
-          --text-primary: #1A1A1A;
-          --text-secondary: #666666;
-          --shadow: 0 2px 8px rgba(0,0,0,0.06);
-          --radius-card: 22px;
+          --primary-bg: #0A0E27;
+          --card-bg: #1A1F3A;
+          --card-bg-alt: #141829;
+          --accent: #4DD0E1;
+          --accent-dark: #26C6DA;
+          --accent-light: rgba(77, 208, 225, 0.1);
+          --text-primary: #FFFFFF;
+          --text-secondary: #B0B8D4;
+          --text-muted: #6B7280;
+          --shadow: 0 4px 20px rgba(0,0,0,0.3);
+          --radius-card: 16px;
           --radius-button: 12px;
           --radius-input: 8px;
         }
@@ -66,12 +68,19 @@ export default function Layout({ children, currentPageName }) {
           -webkit-tap-highlight-color: transparent;
         }
 
+        body {
+          background: #0A0E27;
+        }
+
         .bottom-nav {
-          box-shadow: 0 -2px 20px rgba(0,0,0,0.08);
+          background: rgba(26, 31, 58, 0.95);
+          backdrop-filter: blur(20px);
+          box-shadow: 0 -2px 30px rgba(0,0,0,0.5);
         }
 
         .nav-item {
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          color: #6B7280;
         }
 
         .nav-item.active {
@@ -135,8 +144,8 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Desktop Side Navigation */}
       {!hideNav && (
-        <nav className="hidden md:flex fixed left-0 top-0 h-full w-20 bg-white flex-col items-center py-8 shadow-[2px_0_20px_rgba(0,0,0,0.06)] z-50">
-          <div className="w-10 h-10 bg-[#1ABC9C] rounded-[12px] flex items-center justify-center mb-8">
+        <nav className="hidden md:flex fixed left-0 top-0 h-full w-20 bg-[#1A1F3A]/95 backdrop-blur-xl flex-col items-center py-8 shadow-[2px_0_30px_rgba(0,0,0,0.5)] z-50 border-r border-white/5">
+          <div className="w-10 h-10 bg-gradient-to-br from-[#4DD0E1] to-[#26C6DA] rounded-[12px] flex items-center justify-center mb-8">
             <Sparkles className="w-5 h-5 text-white" />
           </div>
           <div className="flex flex-col gap-2 flex-1">
@@ -146,8 +155,8 @@ export default function Layout({ children, currentPageName }) {
                 to={createPageUrl(item.page)}
                 className={`nav-item w-12 h-12 rounded-[12px] flex items-center justify-center ${
                   currentPageName === item.page 
-                    ? 'active bg-[#1ABC9C]/10' 
-                    : 'text-[#666666] hover:bg-[#F0E5D8]'
+                    ? 'active bg-[#4DD0E1]/10' 
+                    : 'hover:bg-white/5'
                 }`}
               >
                 <item.icon className="w-5 h-5" />
@@ -159,7 +168,7 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Mobile Bottom Navigation */}
       {!hideNav && (
-        <nav className="md:hidden bottom-nav fixed bottom-0 left-0 right-0 bg-white px-4 py-2 z-50">
+        <nav className="md:hidden bottom-nav fixed bottom-0 left-0 right-0 px-4 py-2 z-50">
           <div className="flex justify-around items-center">
             {navItems.map((item) => (
               <Link
@@ -168,7 +177,7 @@ export default function Layout({ children, currentPageName }) {
                 className={`nav-item flex flex-col items-center py-2 px-3 rounded-[12px] ${
                   currentPageName === item.page 
                     ? 'active' 
-                    : 'text-[#666666]'
+                    : ''
                 }`}
               >
                 <item.icon className="w-5 h-5" />

@@ -1,42 +1,69 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { format, startOfWeek, endOfWeek, isMonday } from 'date-fns';
+import { format } from 'date-fns';
 import { motion } from 'framer-motion';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Moon, Sun, Sunset, Award, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from './utils';
 
-import DailyIntentionCard from '../components/dashboard/DailyIntentionCard';
+import Card from '../components/shared/Card';
+import Button from '../components/shared/Button';
 import HabitQuickView from '../components/dashboard/HabitQuickView';
 import QuickStats from '../components/dashboard/QuickStats';
-import RecentJournal from '../components/dashboard/RecentJournal';
-import ResourcesSection from '../components/dashboard/ResourcesSection';
-import WeeklyReviewPrompt from '../components/weekly-review/WeeklyReviewPrompt';
-import { Award } from 'lucide-react';
 
 export default function Dashboard() {
   const queryClient = useQueryClient();
   const today = format(new Date(), 'yyyy-MM-dd');
-  const [showWeeklyReview, setShowWeeklyReview] = useState(false);
+  const currentHour = new Date().getHours();
 
-  // Check if weekly review is needed
-  const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
-  
-  const { data: weeklySummaries = [] } = useQuery({
-    queryKey: ['weeklySummaries'],
-    queryFn: () => base44.entities.WeeklySummary.list('-week_start', 1),
-  });
+  // Determine time of day
+  const getTimeOfDay = () => {
+    if (currentHour >= 5 && currentHour < 12) return 'morning';
+    if (currentHour >= 12 && currentHour < 17) return 'afternoon';
+    if (currentHour >= 17 && currentHour < 22) return 'evening';
+    return 'night';
+  };
 
-  useEffect(() => {
-    // Show weekly review prompt on Mondays if not completed this week
-    if (isMonday(new Date())) {
-      const hasThisWeekSummary = weeklySummaries.some(s => s.week_start === weekStart);
-      if (!hasThisWeekSummary) {
-        setShowWeeklyReview(true);
-      }
+  const timeOfDay = getTimeOfDay();
+
+  const timeOfDayConfig = {
+    morning: {
+      title: 'Morning Momentum',
+      subtitle: 'Enter your flow state before the world wakes up.',
+      icon: Sun,
+      gradient: 'from-orange-400/20 via-yellow-400/20 to-pink-400/20',
+      action: 'Start Your Day',
+      image: 'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?w=1200&q=80'
+    },
+    afternoon: {
+      title: 'Midday Check-In',
+      subtitle: 'Pause, breathe, and realign with your intentions.',
+      icon: Sun,
+      gradient: 'from-blue-400/20 via-cyan-400/20 to-teal-400/20',
+      action: 'Review Progress',
+      image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80'
+    },
+    evening: {
+      title: 'Evening Reflection',
+      subtitle: 'The day winds down. What did you learn?',
+      icon: Sunset,
+      gradient: 'from-purple-400/20 via-pink-400/20 to-orange-400/20',
+      action: 'Reflect on Today',
+      image: 'https://images.unsplash.com/photo-1495567720989-cebdbdd97913?w=1200&q=80'
+    },
+    night: {
+      title: 'Silent Night',
+      subtitle: 'The day is done. Take a breath and look back at your growth.',
+      icon: Moon,
+      gradient: 'from-indigo-900/40 via-blue-900/40 to-purple-900/40',
+      action: 'Evening Journal',
+      image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1200&q=80'
     }
-  }, [weeklySummaries, weekStart]);
+  };
 
-  // Queries
+  const config = timeOfDayConfig[timeOfDay];
+
   const { data: habits = [] } = useQuery({
     queryKey: ['habits'],
     queryFn: () => base44.entities.Habit.filter({ is_active: true }),
@@ -52,11 +79,6 @@ export default function Dashboard() {
     queryFn: () => base44.entities.HabitLog.list('-date', 100),
   });
 
-  const { data: intentions = [] } = useQuery({
-    queryKey: ['intentions', today],
-    queryFn: () => base44.entities.DailyIntention.filter({ date: today }),
-  });
-
   const { data: journalEntries = [] } = useQuery({
     queryKey: ['journalEntries'],
     queryFn: () => base44.entities.JournalEntry.list('-date', 10),
@@ -67,34 +89,13 @@ export default function Dashboard() {
     queryFn: () => base44.entities.Achievement.list(),
   });
 
-  const { data: profiles = [] } = useQuery({
-    queryKey: ['userProfile'],
-    queryFn: () => base44.entities.UserProfile.list(),
-  });
-
   const { data: gamificationProfiles = [] } = useQuery({
     queryKey: ['gamificationProfile'],
     queryFn: () => base44.entities.GamificationProfile.list(),
   });
 
-  // Mutations
-  const createIntentionMutation = useMutation({
-    mutationFn: (data) => base44.entities.DailyIntention.create({ ...data, date: today }),
-    onSuccess: () => queryClient.invalidateQueries(['intentions']),
-  });
-
-  const updateIntentionMutation = useMutation({
-    mutationFn: (data) => base44.entities.DailyIntention.update(intentions[0]?.id, data),
-    onSuccess: () => queryClient.invalidateQueries(['intentions']),
-  });
-
   const createHabitLogMutation = useMutation({
     mutationFn: (data) => base44.entities.HabitLog.create(data),
-    onSuccess: () => queryClient.invalidateQueries(['habitLogs']),
-  });
-
-  const updateHabitLogMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.HabitLog.update(id, data),
     onSuccess: () => queryClient.invalidateQueries(['habitLogs']),
   });
 
@@ -103,128 +104,118 @@ export default function Dashboard() {
     onSuccess: () => queryClient.invalidateQueries(['habitLogs']),
   });
 
-  const handleToggleHabit = async (habitId, completed) => {
+  const handleToggleHabit = async (habitId) => {
     const existingLog = todayLogs.find(log => log.habit_id === habitId);
-    
     if (existingLog) {
-      if (completed) {
-        await updateHabitLogMutation.mutateAsync({ id: existingLog.id, data: { completed: true } });
-      } else {
-        await deleteHabitLogMutation.mutateAsync(existingLog.id);
-      }
-    } else if (completed) {
+      await deleteHabitLogMutation.mutateAsync(existingLog.id);
+    } else {
       await createHabitLogMutation.mutateAsync({ habit_id: habitId, date: today, completed: true });
     }
   };
 
-  // Calculate stats
-  const calculateStats = () => {
-    const profile = profiles[0] || {};
-    
-    // Habit completion rate for last 7 days
-    const last7Days = [];
-    for (let i = 0; i < 7; i++) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      last7Days.push(format(date, 'yyyy-MM-dd'));
-    }
-    
-    const logsLast7Days = allLogs.filter(log => last7Days.includes(log.date) && log.completed);
-    const habitRate = habits.length > 0 
-      ? (logsLast7Days.length / (habits.length * 7)) * 100 
-      : 0;
-
-    return {
-      streakDays: profile.streak_days || 0,
-      habitRate: Math.min(habitRate, 100),
-      totalReflections: journalEntries.length,
-      achievements: achievements.length
-    };
-  };
-
-  const todayIntention = intentions[0];
   const gamProfile = gamificationProfiles[0];
 
   return (
-    <div className="p-6 md:p-8">
-      {/* Welcome Header */}
-      <motion.div 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
-      >
-        <div className="flex items-center gap-3 mb-2">
-          <Sparkles className="w-6 h-6 text-[#1ABC9C]" />
-          <span className="text-sm font-medium text-[#1ABC9C]">
-            {format(new Date(), 'EEEE, MMMM d')}
-          </span>
-        </div>
-        <h1 className="text-3xl md:text-4xl font-semibold text-[#1A1A1A]">
-          Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 18 ? 'Afternoon' : 'Evening'}
-        </h1>
-        <p className="text-[#666666] mt-1">Let's make today count.</p>
-      </motion.div>
-
-      {/* Weekly Review Prompt */}
-      {showWeeklyReview && (
-        <WeeklyReviewPrompt 
-          onComplete={() => setShowWeeklyReview(false)}
-          onDismiss={() => setShowWeeklyReview(false)}
-        />
-      )}
-
-      {/* Gamification Banner */}
-      {gamProfile && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6 p-6 bg-gradient-to-r from-[#1ABC9C] to-[#16A085] rounded-[22px] text-white"
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <div className="relative h-screen flex items-center justify-center overflow-hidden">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${config.image})` }}
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-white/80 text-sm mb-1">Your Level</p>
-              <p className="text-4xl font-bold">{gamProfile.level}</p>
-              <p className="text-white/80 text-xs mt-1">
-                {gamProfile.total_points} XP • {Math.floor((gamProfile.total_points % 100))} / 100 to next level
-              </p>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="text-center">
-                <Award className="w-8 h-8 mx-auto mb-1" />
-                <p className="text-2xl font-bold">{achievements.length}</p>
-                <p className="text-xs text-white/80">Badges</p>
-              </div>
-            </div>
+          <div className={`absolute inset-0 bg-gradient-to-b ${config.gradient} backdrop-blur-[2px]`} />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0A0E27]/60 via-[#0A0E27]/40 to-[#0A0E27]" />
+        </div>
+
+        {/* Content */}
+        <div className="relative z-10 text-center px-6 max-w-2xl">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <config.icon className="w-16 h-16 mx-auto mb-6 text-[#4DD0E1]" />
+            <h1 className="text-5xl md:text-7xl font-bold text-white mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
+              {config.title}
+            </h1>
+            <p className="text-xl text-white/80 mb-8">
+              {config.subtitle}
+            </p>
+            <Link to={createPageUrl(timeOfDay === 'night' ? 'Journal' : 'Habits')}>
+              <Button size="lg" className="text-lg px-8 py-4">
+                {config.action}
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </Link>
+          </motion.div>
+        </div>
+
+        {/* Scroll Indicator */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+          <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center pt-2">
+            <div className="w-1 h-3 bg-white/50 rounded-full" />
           </div>
-        </motion.div>
-      )}
-
-      {/* Quick Stats */}
-      <div className="mb-8">
-        <QuickStats stats={calculateStats()} />
+        </div>
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Daily Intention */}
-        <DailyIntentionCard 
-          intention={todayIntention}
-          onSave={(data) => createIntentionMutation.mutate(data)}
-          onUpdate={(data) => updateIntentionMutation.mutate(data)}
-        />
+      {/* Content Section */}
+      <div className="relative z-20 -mt-20 px-6 pb-24 md:pb-8">
+        <div className="max-w-6xl mx-auto space-y-6">
+          {/* Gamification Banner */}
+          {gamProfile && (
+            <Card variant="glass" className="border-2 border-[#4DD0E1]/20">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[#B0B8D4] text-sm mb-1">Your Level</p>
+                  <p className="text-5xl font-bold text-white">{gamProfile.level}</p>
+                  <p className="text-[#B0B8D4] text-sm mt-2">
+                    {gamProfile.total_points} XP • {Math.floor((gamProfile.total_points % 100))} / 100 to next level
+                  </p>
+                </div>
+                <div className="flex items-center gap-6">
+                  <div className="text-center">
+                    <Award className="w-10 h-10 mx-auto mb-2 text-[#4DD0E1]" />
+                    <p className="text-3xl font-bold text-white">{achievements.length}</p>
+                    <p className="text-xs text-[#B0B8D4]">Badges</p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          )}
 
-        {/* Habits Quick View */}
-        <HabitQuickView 
-          habits={habits}
-          todayLogs={todayLogs}
-          onToggleHabit={handleToggleHabit}
-        />
-      </div>
+          {/* Habits */}
+          <HabitQuickView 
+            habits={habits}
+            todayLogs={todayLogs}
+            onToggleHabit={handleToggleHabit}
+          />
 
-      {/* Secondary Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <RecentJournal entries={journalEntries} />
-        <ResourcesSection />
+          {/* Quick Actions */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Link to={createPageUrl('Coach')}>
+              <Card hover className="h-full">
+                <Sparkles className="w-8 h-8 text-[#4DD0E1] mb-3" />
+                <h3 className="text-white font-semibold mb-1">Talk to Coach</h3>
+                <p className="text-[#B0B8D4] text-sm">Get personalized guidance</p>
+              </Card>
+            </Link>
+            <Link to={createPageUrl('Journal')}>
+              <Card hover className="h-full">
+                <Moon className="w-8 h-8 text-[#4DD0E1] mb-3" />
+                <h3 className="text-white font-semibold mb-1">Journal</h3>
+                <p className="text-[#B0B8D4] text-sm">Reflect on your day</p>
+              </Card>
+            </Link>
+            <Link to={createPageUrl('Progress')}>
+              <Card hover className="h-full">
+                <Award className="w-8 h-8 text-[#4DD0E1] mb-3" />
+                <h3 className="text-white font-semibold mb-1">Progress</h3>
+                <p className="text-[#B0B8D4] text-sm">View your achievements</p>
+              </Card>
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );

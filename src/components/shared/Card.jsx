@@ -6,10 +6,13 @@ export default function Card({
   className = '', 
   onClick,
   hover = false,
-  padding = 'p-4 md:p-6'
+  padding = 'p-4 md:p-6',
+  variant = 'default'
 }) {
-  const baseClasses = `bg-white rounded-[22px] shadow-[0_2px_8px_rgba(0,0,0,0.06)] ${padding}`;
-  const hoverClasses = hover ? 'cursor-pointer hover:shadow-[0_4px_16px_rgba(0,0,0,0.1)] transition-shadow duration-300' : '';
+  const baseClasses = variant === 'glass' 
+    ? `bg-white/5 backdrop-blur-xl border border-white/10 rounded-[16px] ${padding}`
+    : `bg-[#1A1F3A] rounded-[16px] shadow-[0_4px_20px_rgba(0,0,0,0.3)] ${padding}`;
+  const hoverClasses = hover ? 'cursor-pointer hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] transition-all duration-300' : '';
 
   return (
     <motion.div

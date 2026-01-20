@@ -1,5 +1,6 @@
 import Accountability from './pages/Accountability';
 import Achievements from './pages/Achievements';
+import Coach from './pages/Coach';
 import Dashboard from './pages/Dashboard';
 import Goals from './pages/Goals';
 import Habits from './pages/Habits';
@@ -8,13 +9,13 @@ import JournalAnalysis from './pages/JournalAnalysis';
 import Onboarding from './pages/Onboarding';
 import Progress from './pages/Progress';
 import Settings from './pages/Settings';
-import Coach from './pages/Coach';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "Accountability": Accountability,
     "Achievements": Achievements,
+    "Coach": Coach,
     "Dashboard": Dashboard,
     "Goals": Goals,
     "Habits": Habits,
@@ -23,7 +24,6 @@ export const PAGES = {
     "Onboarding": Onboarding,
     "Progress": Progress,
     "Settings": Settings,
-    "Coach": Coach,
 }
 
 export const pagesConfig = {
