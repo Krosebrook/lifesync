@@ -72,6 +72,11 @@ export default function Dashboard() {
     queryFn: () => base44.entities.UserProfile.list(),
   });
 
+  const { data: gamificationProfiles = [] } = useQuery({
+    queryKey: ['gamificationProfile'],
+    queryFn: () => base44.entities.GamificationProfile.list(),
+  });
+
   // Mutations
   const createIntentionMutation = useMutation({
     mutationFn: (data) => base44.entities.DailyIntention.create({ ...data, date: today }),
@@ -138,6 +143,7 @@ export default function Dashboard() {
   };
 
   const todayIntention = intentions[0];
+  const gamProfile = gamificationProfiles[0];
 
   return (
     <div className="p-6 md:p-8">
@@ -165,6 +171,32 @@ export default function Dashboard() {
           onComplete={() => setShowWeeklyReview(false)}
           onDismiss={() => setShowWeeklyReview(false)}
         />
+      )}
+
+      {/* Gamification Banner */}
+      {gamProfile && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 p-6 bg-gradient-to-r from-[#1ABC9C] to-[#16A085] rounded-[22px] text-white"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-white/80 text-sm mb-1">Your Level</p>
+              <p className="text-4xl font-bold">{gamProfile.level}</p>
+              <p className="text-white/80 text-xs mt-1">
+                {gamProfile.total_points} XP • {Math.floor((gamProfile.total_points % 100))} / 100 to next level
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-center">
+                <Award className="w-8 h-8 mx-auto mb-1" />
+                <p className="text-2xl font-bold">{achievements.length}</p>
+                <p className="text-xs text-white/80">Badges</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       )}
 
       {/* Quick Stats */}
