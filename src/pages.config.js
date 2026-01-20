@@ -6,6 +6,8 @@ import Journal from './pages/Journal';
 import Onboarding from './pages/Onboarding';
 import Progress from './pages/Progress';
 import Settings from './pages/Settings';
+import JournalAnalysis from './pages/JournalAnalysis';
+import Accountability from './pages/Accountability';
 import __Layout from './Layout.jsx';
 
 
@@ -18,6 +20,8 @@ export const PAGES = {
     "Onboarding": Onboarding,
     "Progress": Progress,
     "Settings": Settings,
+    "JournalAnalysis": JournalAnalysis,
+    "Accountability": Accountability,
 }
 
 export const pagesConfig = {
