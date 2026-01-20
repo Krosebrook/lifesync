@@ -153,6 +153,8 @@ export default function Habits() {
     }
   };
 
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  
   const activeHabits = habits.filter(h => h.is_active);
   const filteredHabits = selectedCategory === 'all' 
     ? activeHabits 
@@ -218,6 +220,29 @@ export default function Habits() {
         <WeeklyCalendar logs={weekLogs} habits={activeHabits} />
       </div>
 
+      {/* Category Filter */}
+      {activeHabits.length > 0 && (
+        <Card className="mb-6">
+          <h3 className="text-sm font-medium text-[#666666] mb-3">Filter by category</h3>
+          <div className="flex flex-wrap gap-2">
+            {categories.map((cat) => (
+              <button
+                key={cat.value}
+                onClick={() => setSelectedCategory(cat.value)}
+                className={`px-3 py-2 rounded-[8px] text-sm font-medium transition-all flex items-center gap-2 ${
+                  selectedCategory === cat.value
+                    ? 'bg-[#1ABC9C] text-white'
+                    : 'bg-[#F0E5D8] text-[#666666] hover:bg-[#E5D9CC]'
+                }`}
+              >
+                <span>{cat.icon}</span>
+                <span>{cat.label}</span>
+              </button>
+            ))}
+          </div>
+        </Card>
+      )}
+
       {/* Active Challenges */}
       {challenges.filter(c => c.status === 'active').length > 0 && (
         <div className="mb-8">
@@ -243,10 +268,14 @@ export default function Habits() {
       )}
 
       {/* Habits Grid */}
-      {activeHabits.length > 0 ? (
+      {filteredHabits.length === 0 && activeHabits.length > 0 ? (
+        <Card className="text-center py-12">
+          <p className="text-[#666666]">No habits in this category</p>
+        </Card>
+      ) : activeHabits.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <AnimatePresence mode="popLayout">
-            {activeHabits.map((habit) => (
+            {filteredHabits.map((habit) => (
               <HabitCard
                 key={habit.id}
                 habit={habit}

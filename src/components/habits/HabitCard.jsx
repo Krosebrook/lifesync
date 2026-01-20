@@ -84,7 +84,7 @@ export default function HabitCard({ habit, isCompleted, onToggle, onEdit, onDele
             )}
             
             {/* Streak */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 flex-wrap">
               <div className={`flex items-center gap-1 ${isCompleted ? 'text-white/90' : 'text-[#E67E22]'}`}>
                 <Flame className="w-4 h-4" />
                 <span className="text-sm font-medium">{habit.current_streak || 0} day streak</span>
@@ -92,6 +92,11 @@ export default function HabitCard({ habit, isCompleted, onToggle, onEdit, onDele
               {habit.longest_streak > 0 && (
                 <span className={`text-xs ${isCompleted ? 'text-white/70' : 'text-[#666666]'}`}>
                   Best: {habit.longest_streak} days
+                </span>
+              )}
+              {habit.reminder_time && (
+                <span className={`text-xs flex items-center gap-1 ${isCompleted ? 'text-white/70' : 'text-[#666666]'}`}>
+                  🔔 {habit.reminder_time}
                 </span>
               )}
             </div>
