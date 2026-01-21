@@ -1,17 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Send, Sparkles, Loader2 } from 'lucide-react';
+import { Send, Sparkles, Loader2, Brain } from 'lucide-react';
 import Card from '../components/shared/Card';
 import Button from '../components/shared/Button';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
+import CoachingInsights from '../components/coach/CoachingInsights';
 
 export default function Coach() {
   const [conversationId, setConversationId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const [showInsights, setShowInsights] = useState(false);
+  const [coaching, setCoaching] = useState(null);
+  const [analytics, setAnalytics] = useState(null);
+  const [loadingInsights, setLoadingInsights] = useState(false);
   const messagesEndRef = useRef(null);
 
   const { data: conversations = [] } = useQuery({
@@ -80,6 +85,22 @@ export default function Coach() {
     }
   };
 
+  const loadCoachingInsights = async () => {
+    setLoadingInsights(true);
+    try {
+      const response = await base44.functions.invoke('generatePersonalizedCoaching', {});
+      if (response.data.success) {
+        setCoaching(response.data.coaching);
+        setAnalytics(response.data.analytics);
+        setShowInsights(true);
+      }
+    } catch (error) {
+      console.error('Error loading coaching insights:', error);
+    } finally {
+      setLoadingInsights(false);
+    }
+  };
+
   const suggestedPrompts = [
     "How am I doing with my goals?",
     "What habit should I focus on next?",
@@ -92,17 +113,65 @@ export default function Coach() {
       {/* Header */}
       <div className="p-6 bg-white border-b border-[#E5D9CC]">
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-[#1ABC9C] to-[#16A085] rounded-full flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-white" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-[#1ABC9C] to-[#16A085] rounded-full flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-semibold text-[#1A1A1A]">Personal Coach</h1>
+                <p className="text-sm text-[#666666]">Your AI-powered development guide</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-semibold text-[#1A1A1A]">Personal Coach</h1>
-              <p className="text-sm text-[#666666]">Your AI-powered development guide</p>
-            </div>
+            <Button
+              onClick={loadCoachingInsights}
+              loading={loadingInsights}
+              variant="outline"
+              icon={Brain}
+              size="sm"
+            >
+              Get Insights
+            </Button>
           </div>
         </div>
       </div>
+
+      {/* Coaching Insights Modal */}
+      <AnimatePresence>
+        {showInsights && coaching && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/40 z-50 overflow-y-auto p-4"
+            onClick={() => setShowInsights(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="max-w-3xl mx-auto my-8"
+            >
+              <Card>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-semibold text-[#1A1A1A]">Your Personalized Coaching Report</h2>
+                  <button
+                    onClick={() => setShowInsights(false)}
+                    className="text-[#666666] hover:text-[#1A1A1A] text-2xl"
+                  >
+                    ×
+                  </button>
+                </div>
+                <CoachingInsights coaching={coaching} analytics={analytics} />
+                <Button onClick={() => setShowInsights(false)} variant="primary" className="w-full mt-4">
+                  Close
+                </Button>
+              </Card>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-6">
