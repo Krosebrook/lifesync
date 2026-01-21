@@ -1,77 +1,114 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, Medal, Award, TrendingUp } from 'lucide-react';
+import { Trophy, Medal, Award, Eye, EyeOff, Crown } from 'lucide-react';
 import Card from '../shared/Card';
+import Button from '../shared/Button';
+import { base44 } from '@/api/base44Client';
 
-export default function Leaderboard({ leaderboardData, currentUser }) {
-  const getRankIcon = (rank) => {
-    if (rank === 1) return <Trophy className="w-6 h-6 text-yellow-500" />;
-    if (rank === 2) return <Medal className="w-6 h-6 text-gray-400" />;
-    if (rank === 3) return <Medal className="w-6 h-6 text-amber-600" />;
-    return <span className="text-[#666666] font-semibold">#{rank}</span>;
-  };
+export default function Leaderboard({ entries = [], currentUser, onToggleVisibility }) {
+  const [filter, setFilter] = useState('all');
 
-  const getRankColor = (rank) => {
-    if (rank === 1) return 'from-yellow-400/20 to-yellow-600/20 border-yellow-500';
-    if (rank === 2) return 'from-gray-300/20 to-gray-500/20 border-gray-400';
-    if (rank === 3) return 'from-amber-400/20 to-amber-600/20 border-amber-500';
-    return 'from-[#F0E5D8] to-[#E5D9CC] border-[#E5D9CC]';
-  };
+  const sortedEntries = [...entries]
+    .filter(e => e.is_visible || e.user_email === currentUser?.email)
+    .sort((a, b) => b.total_points - a.total_points);
+
+  const topThree = sortedEntries.slice(0, 3);
+  const rest = sortedEntries.slice(3, 10);
+
+  const currentUserEntry = entries.find(e => e.user_email === currentUser?.email);
+  const currentUserRank = sortedEntries.findIndex(e => e.user_email === currentUser?.email) + 1;
+
+  const medals = [
+    { icon: Trophy, color: 'text-yellow-500', bg: 'bg-yellow-100' },
+    { icon: Medal, color: 'text-gray-400', bg: 'bg-gray-100' },
+    { icon: Award, color: 'text-amber-600', bg: 'bg-amber-100' }
+  ];
 
   return (
-    <Card>
-      <div className="flex items-center gap-2 mb-6">
-        <Trophy className="w-6 h-6 text-[#1ABC9C]" />
-        <h2 className="text-xl font-semibold text-[#1A1A1A]">Leaderboard</h2>
-      </div>
+    <div className="space-y-4">
+      {/* Current User Status */}
+      {currentUserEntry && (
+        <Card className="bg-gradient-to-r from-[#1ABC9C]/10 to-[#4DD0E1]/10 border-2 border-[#1ABC9C]/20">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-[#1ABC9C] rounded-full flex items-center justify-center text-white font-bold">
+                #{currentUserRank}
+              </div>
+              <div>
+                <p className="font-semibold text-[#1A1A1A]">{currentUserEntry.display_name}</p>
+                <p className="text-sm text-[#666]">{currentUserEntry.total_points} points • Level {currentUserEntry.level}</p>
+              </div>
+            </div>
+            <Button
+              onClick={onToggleVisibility}
+              variant="ghost"
+              size="icon"
+            >
+              {currentUserEntry.is_visible ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+            </Button>
+          </div>
+        </Card>
+      )}
 
-      <div className="space-y-3">
-        {leaderboardData.map((entry, index) => {
-          const rank = index + 1;
-          const isCurrentUser = entry.email === currentUser;
+      {/* Top 3 */}
+      <div className="grid grid-cols-3 gap-4">
+        {topThree.map((entry, idx) => {
+          const MedalIcon = medals[idx].icon;
+          const isCurrentUser = entry.user_email === currentUser?.email;
           
           return (
             <motion.div
               key={entry.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.05 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.1 }}
             >
-              <div 
-                className={`p-4 rounded-[12px] bg-gradient-to-r ${getRankColor(rank)} border-2 ${
-                  isCurrentUser ? 'ring-2 ring-[#1ABC9C]' : ''
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 flex items-center justify-center">
-                      {getRankIcon(rank)}
-                    </div>
-                    <div>
-                      <p className={`font-semibold ${isCurrentUser ? 'text-[#1ABC9C]' : 'text-[#1A1A1A]'}`}>
-                        {entry.name || 'Anonymous'}
-                        {isCurrentUser && <span className="ml-2 text-xs text-[#1ABC9C]">(You)</span>}
-                      </p>
-                      <p className="text-sm text-[#666666]">Level {entry.level}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-[#1ABC9C]">{entry.total_points}</p>
-                    <p className="text-xs text-[#666666]">points</p>
-                  </div>
+              <Card className={`text-center ${isCurrentUser ? 'border-2 border-[#1ABC9C]' : ''}`}>
+                <div className={`w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center ${medals[idx].bg}`}>
+                  <MedalIcon className={`w-8 h-8 ${medals[idx].color}`} />
                 </div>
-              </div>
+                <p className="font-semibold text-[#1A1A1A] text-sm mb-1">
+                  {isCurrentUser ? 'You' : entry.display_name}
+                </p>
+                <p className="text-xs text-[#666] mb-1">{entry.total_points} pts</p>
+                <p className="text-xs text-[#999]">Level {entry.level}</p>
+              </Card>
             </motion.div>
           );
         })}
       </div>
 
-      {leaderboardData.length === 0 && (
-        <div className="text-center py-8">
-          <Award className="w-12 h-12 mx-auto mb-3 text-[#999999]" />
-          <p className="text-[#666666]">Connect with friends to see the leaderboard</p>
-        </div>
+      {/* Rest of leaderboard */}
+      {rest.length > 0 && (
+        <Card>
+          <div className="space-y-2">
+            {rest.map((entry, idx) => {
+              const rank = idx + 4;
+              const isCurrentUser = entry.user_email === currentUser?.email;
+              
+              return (
+                <div
+                  key={entry.id}
+                  className={`flex items-center justify-between p-3 rounded-lg ${
+                    isCurrentUser ? 'bg-[#1ABC9C]/10' : 'hover:bg-[#F0E5D8]'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="w-8 text-center font-semibold text-[#666]">#{rank}</span>
+                    <div>
+                      <p className="font-medium text-sm text-[#1A1A1A]">
+                        {isCurrentUser ? 'You' : entry.display_name}
+                      </p>
+                      <p className="text-xs text-[#999]">{entry.total_points} points</p>
+                    </div>
+                  </div>
+                  <span className="text-sm text-[#666]">Lvl {entry.level}</span>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
       )}
-    </Card>
+    </div>
   );
 }
