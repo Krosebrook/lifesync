@@ -12,6 +12,30 @@ import Button from '../components/shared/Button';
 import HabitQuickView from '../components/dashboard/HabitQuickView';
 import QuickStats from '../components/dashboard/QuickStats';
 
+const timeOfDayGreetings = {
+  morning: {
+    icon: Sunrise,
+    title: "Morning Clarity",
+    subtitle: "A new day begins with intention",
+    bgImage: "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?w=1200&q=80",
+    theme: "from-amber-900/40 to-orange-800/60"
+  },
+  afternoon: {
+    icon: Sun,
+    title: "Midday Flow",
+    subtitle: "Momentum carries you forward",
+    bgImage: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80",
+    theme: "from-blue-900/40 to-cyan-800/60"
+  },
+  evening: {
+    icon: Moon,
+    title: "Evening Reflection",
+    subtitle: "The day is done. Look back and grow.",
+    bgImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&q=80",
+    theme: "from-indigo-900/40 to-purple-800/60"
+  }
+};
+
 export default function Dashboard() {
   const queryClient = useQueryClient();
   const today = format(new Date(), 'yyyy-MM-dd');
