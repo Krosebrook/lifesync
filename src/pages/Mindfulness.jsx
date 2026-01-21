@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Wind, Volume2, Brain, TrendingUp } from 'lucide-react';
 
 import Card from '../components/shared/Card';
-import Button from '../shared/Button';
+import Button from '../components/shared/Button';
 import MeditationCard from '../components/mindfulness/MeditationCard';
 import BreathingExercise from '../components/mindfulness/BreathingExercise';
 import SoundscapeCard from '../components/mindfulness/SoundscapeCard';
