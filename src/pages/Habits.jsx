@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format, subDays } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Target, Flame, Trophy } from 'lucide-react';
+import { Plus, Target, Flame, Trophy, Sparkles } from 'lucide-react';
 
 import Card from '../components/shared/Card';
 import Button from '../components/shared/Button';
@@ -14,6 +14,8 @@ import ChallengeCard from '../components/habits/ChallengeCard';
 import ChallengeForm from '../components/habits/ChallengeForm';
 import StreakCelebration from '../components/celebration/StreakCelebration';
 import HabitSuggestions from '../components/habits/HabitSuggestions';
+import PointsAnimation from '../components/gamification/PointsAnimation';
+import LevelUpModal from '../components/gamification/LevelUpModal';
 
 export default function Habits() {
   const queryClient = useQueryClient();
@@ -26,6 +28,9 @@ export default function Habits() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [pointsEarned, setPointsEarned] = useState(0);
+  const [showPoints, setShowPoints] = useState(false);
+  const [levelUp, setLevelUp] = useState(null);
 
   // Queries
   const { data: habits = [] } = useQuery({
@@ -110,6 +115,22 @@ export default function Habits() {
     onSuccess: () => queryClient.invalidateQueries(['challenges']),
   });
 
+  const awardPoints = async (action, metadata = {}) => {
+    try {
+      const response = await base44.functions.invoke('awardPoints', { action, metadata });
+      if (response.data.success) {
+        setPointsEarned(response.data.pointsEarned);
+        setShowPoints(true);
+        if (response.data.leveledUp) {
+          setLevelUp(response.data.level);
+        }
+        queryClient.invalidateQueries(['gamificationProfile']);
+      }
+    } catch (error) {
+      console.error('Error awarding points:', error);
+    }
+  };
+
   const handleToggleHabit = async (habitId) => {
     const existingLog = todayLogs.find(log => log.habit_id === habitId);
     const habit = habits.find(h => h.id === habitId);
@@ -125,6 +146,10 @@ export default function Habits() {
       }
     } else {
       await createLogMutation.mutateAsync({ habit_id: habitId, date: today, completed: true });
+      
+      // Award points
+      await awardPoints('habit_complete');
+      
       // Increase streak
       if (habit) {
         const newStreak = (habit.current_streak || 0) + 1;
@@ -136,9 +161,10 @@ export default function Habits() {
           }
         });
 
-        // Check for milestone celebrations
+        // Check for milestone celebrations and award streak points
         if ([7, 14, 30, 60, 100].includes(newStreak)) {
           setCelebration({ streak: newStreak, habitName: habit.name });
+          await awardPoints('streak_milestone', { streak: newStreak });
         }
 
         // Update active challenges
@@ -157,6 +183,10 @@ export default function Habits() {
               completion_date: isCompleted ? today : null
             }
           });
+          
+          if (isCompleted) {
+            await awardPoints('challenge_complete');
+          }
         }
       }
     }
@@ -427,6 +457,23 @@ export default function Habits() {
             streak={celebration.streak}
             habitName={celebration.habitName}
             onClose={() => setCelebration(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Points Animation */}
+      <PointsAnimation 
+        points={pointsEarned}
+        show={showPoints}
+        onComplete={() => setShowPoints(false)}
+      />
+
+      {/* Level Up Modal */}
+      <AnimatePresence>
+        {levelUp && (
+          <LevelUpModal
+            level={levelUp}
+            onClose={() => setLevelUp(null)}
           />
         )}
       </AnimatePresence>

@@ -15,6 +15,9 @@ export default function Goals() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [pointsEarned, setPointsEarned] = useState(0);
+  const [showPoints, setShowPoints] = useState(false);
+  const [levelUp, setLevelUp] = useState(null);
 
   const queryClient = useQueryClient();
 

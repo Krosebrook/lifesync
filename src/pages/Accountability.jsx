@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Users, Plus, Send, Heart } from 'lucide-react';
+import { Users, Plus, Send, Heart, Trophy } from 'lucide-react';
 import Card from '../components/shared/Card';
 import Button from '../components/shared/Button';
 import { motion, AnimatePresence } from 'framer-motion';
+import Leaderboard from '../components/gamification/Leaderboard';
 
 export default function Accountability() {
   const queryClient = useQueryClient();
@@ -27,6 +28,33 @@ export default function Accountability() {
   const { data: encouragements = [] } = useQuery({
     queryKey: ['encouragements'],
     queryFn: () => base44.entities.Encouragement.filter({ to_email: user?.email })
+  });
+
+  const { data: leaderboardData = [] } = useQuery({
+    queryKey: ['leaderboard'],
+    queryFn: async () => {
+      // Get all gamification profiles
+      const allProfiles = await base44.entities.GamificationProfile.list('-total_points');
+      
+      // Filter to include user and their partners
+      const partnerEmails = partners.map(p => p.partner_email);
+      const relevantProfiles = allProfiles.filter(profile => 
+        profile.created_by === user?.email || partnerEmails.includes(profile.created_by)
+      );
+
+      // Get user details
+      const users = await base44.entities.User.list();
+      
+      return relevantProfiles.map(profile => {
+        const profileUser = users.find(u => u.email === profile.created_by);
+        return {
+          ...profile,
+          name: profileUser?.full_name || 'Anonymous',
+          email: profile.created_by
+        };
+      });
+    },
+    enabled: !!user && partners.length > 0
   });
 
   const addPartnerMutation = useMutation({
@@ -118,6 +146,13 @@ export default function Accountability() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Leaderboard */}
+        {acceptedPartners.length > 0 && leaderboardData.length > 0 && (
+          <div className="mb-6">
+            <Leaderboard leaderboardData={leaderboardData} currentUser={user?.email} />
+          </div>
+        )}
 
         {/* Partners List */}
         <Card className="mb-6">

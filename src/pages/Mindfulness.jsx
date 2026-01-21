@@ -11,6 +11,8 @@ import MeditationCard from '../components/mindfulness/MeditationCard';
 import BreathingExercise from '../components/mindfulness/BreathingExercise';
 import SoundscapeCard from '../components/mindfulness/SoundscapeCard';
 import MindfulnessSuggestions from '../components/mindfulness/MindfulnessSuggestions';
+import PointsAnimation from '../components/gamification/PointsAnimation';
+import LevelUpModal from '../components/gamification/LevelUpModal';
 
 // Predefined practices
 const meditations = [
@@ -120,6 +122,9 @@ export default function Mindfulness() {
   const [moodBefore, setMoodBefore] = useState(3);
   const [moodAfter, setMoodAfter] = useState(null);
   const [currentPractice, setCurrentPractice] = useState(null);
+  const [pointsEarned, setPointsEarned] = useState(0);
+  const [showPoints, setShowPoints] = useState(false);
+  const [levelUp, setLevelUp] = useState(null);
 
   // Queries
   const { data: practices = [] } = useQuery({
@@ -136,11 +141,30 @@ export default function Mindfulness() {
     },
   });
 
+  const awardPoints = async (action) => {
+    try {
+      const response = await base44.functions.invoke('awardPoints', { action });
+      if (response.data.success) {
+        setPointsEarned(response.data.pointsEarned);
+        setShowPoints(true);
+        if (response.data.leveledUp) {
+          setLevelUp(response.data.level);
+        }
+        queryClient.invalidateQueries(['gamificationProfile']);
+      }
+    } catch (error) {
+      console.error('Error awarding points:', error);
+    }
+  };
+
   const handleStartPractice = (practice) => {
     setCurrentPractice(practice);
   };
 
-  const handleCompletePractice = (practice) => {
+  const handleCompletePractice = async (practice) => {
+    // Award points
+    await awardPoints('mindfulness_complete');
+    
     // Show mood after prompt
     if (moodAfter !== null) {
       createPracticeMutation.mutate({
@@ -351,6 +375,23 @@ export default function Mindfulness() {
             insights={insights}
             onAccept={handleAcceptSuggestion}
             onClose={() => setShowSuggestions(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Points Animation */}
+      <PointsAnimation 
+        points={pointsEarned}
+        show={showPoints}
+        onComplete={() => setShowPoints(false)}
+      />
+
+      {/* Level Up Modal */}
+      <AnimatePresence>
+        {levelUp && (
+          <LevelUpModal
+            level={levelUp}
+            onClose={() => setLevelUp(null)}
           />
         )}
       </AnimatePresence>
