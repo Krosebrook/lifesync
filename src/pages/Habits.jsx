@@ -184,17 +184,33 @@ export default function Habits() {
 
   const handleAcceptSuggestion = (suggestion) => {
     setShowSuggestions(false);
-    const habitData = {
-      name: suggestion.name,
-      description: suggestion.description,
-      category: suggestion.category,
-      done_criteria: suggestion.done_criteria,
-      frequency: suggestion.frequency,
-      times_per_week: suggestion.times_per_week,
-      icon: suggestion.icon,
-      color: '#1ABC9C'
-    };
-    createHabitMutation.mutate(habitData);
+    
+    if (suggestion.type === 'adjustment' && suggestion.habit_id) {
+      // Update existing habit
+      const habitData = {
+        name: suggestion.name,
+        description: suggestion.description,
+        category: suggestion.category,
+        done_criteria: suggestion.done_criteria,
+        frequency: suggestion.frequency,
+        times_per_week: suggestion.times_per_week,
+        icon: suggestion.icon
+      };
+      updateHabitMutation.mutate({ id: suggestion.habit_id, data: habitData });
+    } else {
+      // Create new habit
+      const habitData = {
+        name: suggestion.name,
+        description: suggestion.description,
+        category: suggestion.category,
+        done_criteria: suggestion.done_criteria,
+        frequency: suggestion.frequency,
+        times_per_week: suggestion.times_per_week,
+        icon: suggestion.icon,
+        color: '#1ABC9C'
+      };
+      createHabitMutation.mutate(habitData);
+    }
   };
   
   const activeHabits = habits.filter(h => h.is_active);
@@ -397,6 +413,7 @@ export default function Habits() {
           <HabitSuggestions
             suggestions={suggestions}
             values={values}
+            habits={habits}
             onAccept={handleAcceptSuggestion}
             onClose={() => setShowSuggestions(false)}
           />

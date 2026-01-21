@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Plus } from 'lucide-react';
+import { Sparkles, Plus, RefreshCw } from 'lucide-react';
 import Card from '../shared/Card';
 import Button from '../shared/Button';
 
@@ -243,14 +243,16 @@ export default function HabitSuggestions({ suggestions, values, habits = [], onA
               );
             })}
           </div>
+        </div>
+      )}
 
-          <div className="mt-6 flex justify-end">
-            <Button onClick={onClose} variant="secondary">
-              Close
-            </Button>
-          </div>
-        </Card>
-      </motion.div>
-    </motion.div>
-  );
+      <div className="mt-6 flex justify-end">
+        <Button onClick={onClose} variant="secondary">
+          Close
+        </Button>
+      </div>
+    </Card>
+  </motion.div>
+</motion.div>
+);
 }
