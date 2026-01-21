@@ -9,6 +9,8 @@ import Card from '../components/shared/Card';
 import Button from '../components/shared/Button';
 import JournalEntryCard from '../components/journal/JournalEntryCard';
 import JournalForm from '../components/journal/JournalForm';
+import MoodReportCard from '../components/journal/MoodReportCard';
+import JournalSuggestions from '../components/journal/JournalSuggestions';
 
 const filterTypes = [
   { value: 'all', label: 'All' },
@@ -25,6 +27,12 @@ export default function Journal() {
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [moodReport, setMoodReport] = useState(null);
+  const [showReport, setShowReport] = useState(false);
+  const [loadingReport, setLoadingReport] = useState(false);
+  const [journalSuggestions, setJournalSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
   // Queries
   const { data: entries = [], isLoading } = useQuery({
@@ -127,9 +135,27 @@ export default function Journal() {
           <h1 className="text-3xl md:text-4xl font-semibold text-[#1A1A1A]">Journal</h1>
           <p className="text-[#666666] mt-1">Reflect on your journey</p>
         </div>
-        <Button onClick={() => setShowForm(true)} icon={Plus}>
-          New Entry
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button 
+            onClick={() => generateMoodReport('week')} 
+            variant="outline"
+            loading={loadingReport}
+            size="sm"
+          >
+            Weekly Report
+          </Button>
+          <Button 
+            onClick={loadJournalSuggestions}
+            variant="outline"
+            loading={loadingSuggestions}
+            size="sm"
+          >
+            Get Suggestions
+          </Button>
+          <Button onClick={() => setShowForm(true)} icon={Plus}>
+            New Entry
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -238,6 +264,28 @@ export default function Journal() {
           )}
         </Card>
       )}
+
+      {/* Mood Report */}
+      <AnimatePresence>
+        {showReport && moodReport && (
+          <MoodReportCard
+            report={moodReport}
+            onClose={() => setShowReport(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Journal Suggestions */}
+      <AnimatePresence>
+        {showSuggestions && journalSuggestions.length > 0 && (
+          <JournalSuggestions
+            suggestions={journalSuggestions}
+            onAcceptHabit={handleAcceptHabit}
+            onAcceptMindfulness={handleAcceptMindfulness}
+            onClose={() => setShowSuggestions(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Entry View Modal */}
       <AnimatePresence>
