@@ -8,6 +8,8 @@ import Button from '../components/shared/Button';
 import GoalCard from '../components/goals/GoalCard';
 import GoalForm from '../components/goals/GoalForm';
 import GoalSuggestions from '../components/goals/GoalSuggestions';
+import PointsAnimation from '../components/gamification/PointsAnimation';
+import LevelUpModal from '../components/gamification/LevelUpModal';
 
 export default function Goals() {
   const [showForm, setShowForm] = useState(false);
@@ -31,21 +33,41 @@ export default function Goals() {
     queryFn: () => base44.entities.Value.list(),
   });
 
+  const awardPoints = async (action) => {
+    try {
+      const response = await base44.functions.invoke('awardPoints', { action });
+      if (response.data.success) {
+        setPointsEarned(response.data.pointsEarned);
+        setShowPoints(true);
+        if (response.data.leveledUp) {
+          setLevelUp(response.data.level);
+        }
+        queryClient.invalidateQueries(['gamificationProfile']);
+      }
+    } catch (error) {
+      console.error('Error awarding points:', error);
+    }
+  };
+
   const createGoalMutation = useMutation({
     mutationFn: (goalData) => base44.entities.Goal.create(goalData),
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['goals'] });
       setShowForm(false);
       setEditingGoal(null);
+      await awardPoints('goal_create');
     },
   });
 
   const updateGoalMutation = useMutation({
     mutationFn: ({ id, goalData }) => base44.entities.Goal.update(id, goalData),
-    onSuccess: () => {
+    onSuccess: async (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['goals'] });
       setShowForm(false);
       setEditingGoal(null);
+      if (variables.goalData.status === 'completed') {
+        await awardPoints('goal_complete');
+      }
     },
   });
 
@@ -289,6 +311,23 @@ export default function Goals() {
             values={values}
             onAccept={handleAcceptSuggestion}
             onClose={() => setShowSuggestions(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Points Animation */}
+      <PointsAnimation 
+        points={pointsEarned}
+        show={showPoints}
+        onComplete={() => setShowPoints(false)}
+      />
+
+      {/* Level Up Modal */}
+      <AnimatePresence>
+        {levelUp && (
+          <LevelUpModal
+            level={levelUp}
+            onClose={() => setLevelUp(null)}
           />
         )}
       </AnimatePresence>
