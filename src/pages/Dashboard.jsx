@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
-import { Sparkles, Moon, Sun, Sunset, Award, ArrowRight } from 'lucide-react';
+import { Sparkles, Moon, Sun, Sunset, Award, ArrowRight, Target, BookOpen, TrendingUp, Flame, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
@@ -140,17 +140,30 @@ export default function Dashboard() {
   const gamProfile = gamificationProfiles[0];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#0A0E27]">
+      <style>{`
+        .vignette {
+          background: radial-gradient(circle at center, transparent 30%, rgba(10, 14, 39, 0.8) 100%);
+        }
+        .ghost-card {
+          background: linear-gradient(135deg, rgba(77, 208, 225, 0.05) 0%, rgba(77, 208, 225, 0.01) 100%);
+          border: 1px solid rgba(77, 208, 225, 0.15);
+          backdrop-filter: blur(8px);
+        }
+        .glow-text {
+          text-shadow: 0 0 20px rgba(77, 208, 225, 0.3);
+        }
+      `}</style>
+
       {/* Hero Section */}
-      <div className="relative h-screen flex items-center justify-center overflow-hidden">
+      <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
         {/* Background Image */}
         <div 
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0 bg-cover bg-center brightness-50"
           style={{ backgroundImage: `url(${config.image})` }}
-        >
-          <div className={`absolute inset-0 bg-gradient-to-b ${config.gradient} backdrop-blur-[2px]`} />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0A0E27]/60 via-[#0A0E27]/40 to-[#0A0E27]" />
-        </div>
+        />
+        <div className="absolute inset-0 vignette" />
+        <div className={`absolute inset-0 bg-gradient-to-b ${config.gradient}`} />
 
         {/* Content */}
         <div className="relative z-10 text-center px-6 max-w-2xl">
@@ -159,13 +172,31 @@ export default function Dashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <config.icon className="w-16 h-16 mx-auto mb-6 text-[#4DD0E1]" />
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
+            <div className="w-20 h-20 mx-auto mb-8 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm border-2 border-[#4DD0E1]/30">
+              <config.icon className="w-10 h-10 text-[#4DD0E1]" />
+            </div>
+            <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 glow-text tracking-tight">
               {config.title}
             </h1>
-            <p className="text-xl text-white/80 mb-8">
+            <p className="text-lg md:text-xl text-white/70 mb-12 font-light">
               {config.subtitle}
             </p>
+
+            {/* Quick Stats */}
+            <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto mb-12">
+              <div className="ghost-card p-4 rounded-xl text-center">
+                <p className="text-3xl font-bold text-white mb-1">{todayLogs.length}</p>
+                <p className="text-xs text-white/60 uppercase tracking-wider">Today</p>
+              </div>
+              <div className="ghost-card p-4 rounded-xl text-center border-[#4DD0E1]/30">
+                <p className="text-3xl font-bold text-[#4DD0E1] mb-1">{gamProfile?.level || 1}</p>
+                <p className="text-xs text-white/60 uppercase tracking-wider">Level</p>
+              </div>
+              <div className="ghost-card p-4 rounded-xl text-center">
+                <p className="text-3xl font-bold text-white mb-1">{achievements.length}</p>
+                <p className="text-xs text-white/60 uppercase tracking-wider">Badges</p>
+              </div>
+            </div>
             <Link to={createPageUrl(timeOfDay === 'night' ? 'Journal' : 'Habits')}>
               <Button size="lg" className="text-lg px-8 py-4">
                 {config.action}
@@ -176,69 +207,146 @@ export default function Dashboard() {
         </div>
 
         {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center pt-2">
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-60">
+          <p className="text-[10px] text-white uppercase tracking-widest">Scroll to continue</p>
+          <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center pt-2 animate-bounce">
             <div className="w-1 h-3 bg-white/50 rounded-full" />
           </div>
         </div>
       </div>
 
       {/* Content Section */}
-      <div className="relative z-20 -mt-20 px-6 pb-24 md:pb-8">
-        <div className="max-w-6xl mx-auto space-y-6">
-          {/* Gamification Banner */}
-          {gamProfile && (
-            <Card variant="glass" className="border-2 border-[#4DD0E1]/20">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-[#B0B8D4] text-sm mb-1">Your Level</p>
-                  <p className="text-5xl font-bold text-white">{gamProfile.level}</p>
-                  <p className="text-[#B0B8D4] text-sm mt-2">
-                    {gamProfile.total_points} XP • {Math.floor((gamProfile.total_points % 100))} / 100 to next level
-                  </p>
-                </div>
-                <div className="flex items-center gap-6">
-                  <div className="text-center">
-                    <Award className="w-10 h-10 mx-auto mb-2 text-[#4DD0E1]" />
-                    <p className="text-3xl font-bold text-white">{achievements.length}</p>
-                    <p className="text-xs text-[#B0B8D4]">Badges</p>
+      <div className="relative z-20 -mt-32 px-6 pb-24 md:pb-8">
+        <div className="max-w-4xl mx-auto space-y-8">
+          
+          {/* Today's Habits - Narrative Style */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="mb-6">
+              <p className="text-[#4DD0E1] text-xs font-bold tracking-widest uppercase mb-2">Your Daily Anchors</p>
+              <h2 className="text-2xl font-bold text-white">Today's Focus</h2>
+            </div>
+
+            <div className="space-y-3">
+              {habits.slice(0, 5).map((habit, index) => {
+                const isCompleted = todayLogs.some(log => log.habit_id === habit.id);
+                return (
+                  <motion.div
+                    key={habit.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 + index * 0.1 }}
+                    onClick={() => handleToggleHabit(habit.id)}
+                    className={`ghost-card p-5 rounded-xl cursor-pointer transition-all hover:scale-[1.02] ${
+                      isCompleted ? 'border-[#4DD0E1] bg-[#4DD0E1]/10' : ''
+                    }`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className={`w-14 h-14 rounded-xl flex items-center justify-center border transition-all ${
+                        isCompleted 
+                          ? 'bg-[#4DD0E1]/20 border-[#4DD0E1]' 
+                          : 'bg-white/5 border-white/10'
+                      }`}>
+                        {isCompleted ? (
+                          <Check className="w-7 h-7 text-[#4DD0E1]" />
+                        ) : (
+                          <span className="text-3xl">{habit.icon || '📌'}</span>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <p className={`text-xs uppercase tracking-widest mb-1 ${
+                          isCompleted ? 'text-[#4DD0E1]' : 'text-white/50'
+                        }`}>
+                          {isCompleted ? 'Completed' : 'Pending'}
+                        </p>
+                        <p className="text-white text-lg font-bold">{habit.name}</p>
+                        {habit.current_streak > 0 && (
+                          <div className="flex items-center gap-2 mt-1">
+                            <Flame className="w-4 h-4 text-orange-500" />
+                            <p className="text-orange-400 text-sm">{habit.current_streak} day streak</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {habits.length > 5 && (
+              <Link to={createPageUrl('Habits')}>
+                <button className="w-full mt-4 py-3 ghost-card rounded-xl text-[#4DD0E1] font-medium text-sm hover:bg-[#4DD0E1]/10 transition-all">
+                  View All Habits →
+                </button>
+              </Link>
+            )}
+          </motion.div>
+
+          {/* Quick Navigation */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+          >
+            <p className="text-[#4DD0E1] text-xs font-bold tracking-widest uppercase mb-4">Quick Access</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Link to={createPageUrl('Journal')}>
+                <div className="ghost-card p-6 rounded-xl hover:scale-[1.02] transition-all cursor-pointer group">
+                  <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center mb-4 border border-purple-500/30 group-hover:border-purple-500/60 transition-all">
+                    <BookOpen className="w-6 h-6 text-purple-400" />
                   </div>
+                  <p className="text-white font-bold mb-1">Journal</p>
+                  <p className="text-white/50 text-sm">{journalEntries.length} entries</p>
                 </div>
-              </div>
-            </Card>
-          )}
+              </Link>
 
-          {/* Habits */}
-          <HabitQuickView 
-            habits={habits}
-            todayLogs={todayLogs}
-            onToggleHabit={handleToggleHabit}
-          />
+              <Link to={createPageUrl('Goals')}>
+                <div className="ghost-card p-6 rounded-xl hover:scale-[1.02] transition-all cursor-pointer group">
+                  <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mb-4 border border-blue-500/30 group-hover:border-blue-500/60 transition-all">
+                    <Target className="w-6 h-6 text-blue-400" />
+                  </div>
+                  <p className="text-white font-bold mb-1">Goals</p>
+                  <p className="text-white/50 text-sm">Track progress</p>
+                </div>
+              </Link>
 
-          {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Link to={createPageUrl('Coach')}>
-              <Card hover className="h-full">
-                <Sparkles className="w-8 h-8 text-[#4DD0E1] mb-3" />
-                <h3 className="text-white font-semibold mb-1">Talk to Coach</h3>
-                <p className="text-[#B0B8D4] text-sm">Get personalized guidance</p>
-              </Card>
-            </Link>
-            <Link to={createPageUrl('Journal')}>
-              <Card hover className="h-full">
-                <Moon className="w-8 h-8 text-[#4DD0E1] mb-3" />
-                <h3 className="text-white font-semibold mb-1">Journal</h3>
-                <p className="text-[#B0B8D4] text-sm">Reflect on your day</p>
-              </Card>
-            </Link>
-            <Link to={createPageUrl('Progress')}>
-              <Card hover className="h-full">
-                <Award className="w-8 h-8 text-[#4DD0E1] mb-3" />
-                <h3 className="text-white font-semibold mb-1">Progress</h3>
-                <p className="text-[#B0B8D4] text-sm">View your achievements</p>
-              </Card>
-            </Link>
-          </div>
+              <Link to={createPageUrl('Coach')}>
+                <div className="ghost-card p-6 rounded-xl hover:scale-[1.02] transition-all cursor-pointer group">
+                  <div className="w-12 h-12 bg-cyan-500/20 rounded-xl flex items-center justify-center mb-4 border border-cyan-500/30 group-hover:border-cyan-500/60 transition-all">
+                    <Sparkles className="w-6 h-6 text-cyan-400" />
+                  </div>
+                  <p className="text-white font-bold mb-1">AI Coach</p>
+                  <p className="text-white/50 text-sm">Get guidance</p>
+                </div>
+              </Link>
+
+              <Link to={createPageUrl('Gamification')}>
+                <div className="ghost-card p-6 rounded-xl hover:scale-[1.02] transition-all cursor-pointer group">
+                  <div className="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center mb-4 border border-amber-500/30 group-hover:border-amber-500/60 transition-all">
+                    <Award className="w-6 h-6 text-amber-400" />
+                  </div>
+                  <p className="text-white font-bold mb-1">Rewards</p>
+                  <p className="text-white/50 text-sm">{achievements.length} badges</p>
+                </div>
+              </Link>
+            </div>
+          </motion.div>
+
+          {/* Closing Quote */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+            className="mt-16 text-center"
+          >
+            <p className="text-white/40 text-sm italic max-w-md mx-auto">
+              "Structure isn't rigid. It's the invisible framework that gives you freedom to grow."
+            </p>
+            <div className="h-1 w-24 bg-gradient-to-r from-transparent via-[#4DD0E1]/40 to-transparent mx-auto mt-6" />
+          </motion.div>
         </div>
       </div>
     </div>
