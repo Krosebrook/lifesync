@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Wind, Volume2, Brain, TrendingUp } from 'lucide-react';
+import { Sparkles, Wind, Volume2, Brain, TrendingUp, Star } from 'lucide-react';
 
 import Card from '../components/shared/Card';
 import Button from '../components/shared/Button';
@@ -13,6 +13,9 @@ import SoundscapeCard from '../components/mindfulness/SoundscapeCard';
 import MindfulnessSuggestions from '../components/mindfulness/MindfulnessSuggestions';
 import PointsAnimation from '../components/gamification/PointsAnimation';
 import LevelUpModal from '../components/gamification/LevelUpModal';
+import MeditationLibraryBrowser from '../components/mindfulness/MeditationLibraryBrowser';
+import FavoritePractices from '../components/mindfulness/FavoritePractices';
+import PracticeHistory from '../components/mindfulness/PracticeHistory';
 
 // Predefined practices
 const meditations = [
@@ -114,7 +117,7 @@ const soundscapes = [
 export default function Mindfulness() {
   const queryClient = useQueryClient();
   const today = format(new Date(), 'yyyy-MM-dd');
-  const [selectedTab, setSelectedTab] = useState('meditations');
+  const [selectedTab, setSelectedTab] = useState('library');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const [insights, setInsights] = useState(null);
@@ -125,11 +128,25 @@ export default function Mindfulness() {
   const [pointsEarned, setPointsEarned] = useState(0);
   const [showPoints, setShowPoints] = useState(false);
   const [levelUp, setLevelUp] = useState(null);
+  const [favorites, setFavorites] = useState([]);
 
   // Queries
   const { data: practices = [] } = useQuery({
     queryKey: ['mindfulnessPractices'],
     queryFn: () => base44.entities.MindfulnessPractice.list('-date', 50),
+  });
+
+  const { data: libraryPractices = [] } = useQuery({
+    queryKey: ['meditationLibrary'],
+    queryFn: () => base44.entities.MeditationLibrary.list(),
+  });
+
+  const { data: userProfile } = useQuery({
+    queryKey: ['userProfile'],
+    queryFn: async () => {
+      const profiles = await base44.entities.UserProfile.list();
+      return profiles[0];
+    },
   });
 
   const createPracticeMutation = useMutation({
@@ -214,12 +231,32 @@ export default function Mindfulness() {
 
   const handleAcceptSuggestion = (suggestion) => {
     setShowSuggestions(false);
-    // Scroll to appropriate tab
-    setSelectedTab(
-      suggestion.type === 'meditation' ? 'meditations' :
-      suggestion.type === 'breathing' ? 'breathing' : 'soundscapes'
-    );
+    setSelectedTab('library');
   };
+
+  const toggleFavorite = async (practiceId) => {
+    const newFavorites = favorites.includes(practiceId)
+      ? favorites.filter(id => id !== practiceId)
+      : [...favorites, practiceId];
+    
+    setFavorites(newFavorites);
+    
+    // Update user profile with favorites
+    if (userProfile) {
+      await base44.entities.UserProfile.update(userProfile.id, {
+        ...userProfile,
+        favorite_practices: newFavorites
+      });
+      queryClient.invalidateQueries(['userProfile']);
+    }
+  };
+
+  // Load favorites from profile
+  React.useEffect(() => {
+    if (userProfile?.favorite_practices) {
+      setFavorites(userProfile.favorite_practices);
+    }
+  }, [userProfile]);
 
   // Stats
   const totalMinutes = practices.reduce((sum, p) => sum + (p.duration || 0), 0);
@@ -229,9 +266,9 @@ export default function Mindfulness() {
     : 0;
 
   const tabs = [
-    { id: 'meditations', label: 'Meditations', icon: Brain },
-    { id: 'breathing', label: 'Breathing', icon: Wind },
-    { id: 'soundscapes', label: 'Soundscapes', icon: Volume2 }
+    { id: 'library', label: 'Library', icon: Brain },
+    { id: 'favorites', label: 'Favorites', icon: Star },
+    { id: 'history', label: 'History', icon: TrendingUp }
   ];
 
   return (
@@ -309,60 +346,46 @@ export default function Mindfulness() {
 
       {/* Content */}
       <AnimatePresence mode="wait">
-        {selectedTab === 'meditations' && (
+        {selectedTab === 'library' && (
           <motion.div
-            key="meditations"
+            key="library"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
-            {meditations.map((meditation, index) => (
-              <MeditationCard
-                key={index}
-                practice={meditation}
-                onStart={handleStartPractice}
-                onComplete={handleCompletePractice}
-              />
-            ))}
+            <MeditationLibraryBrowser
+              practices={libraryPractices}
+              onStart={handleStartPractice}
+              favorites={favorites}
+              onToggleFavorite={toggleFavorite}
+            />
           </motion.div>
         )}
 
-        {selectedTab === 'breathing' && (
+        {selectedTab === 'favorites' && (
           <motion.div
-            key="breathing"
+            key="favorites"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
           >
-            {breathingExercises.map((exercise, index) => (
-              <BreathingExercise
-                key={index}
-                exercise={exercise}
-                onStart={handleStartPractice}
-                onComplete={handleCompletePractice}
-              />
-            ))}
+            <FavoritePractices
+              favorites={favorites}
+              practices={libraryPractices}
+              onStart={handleStartPractice}
+              onToggleFavorite={toggleFavorite}
+            />
           </motion.div>
         )}
 
-        {selectedTab === 'soundscapes' && (
+        {selectedTab === 'history' && (
           <motion.div
-            key="soundscapes"
+            key="history"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
           >
-            {soundscapes.map((soundscape, index) => (
-              <SoundscapeCard
-                key={index}
-                soundscape={soundscape}
-                onStart={handleStartPractice}
-                onComplete={handleCompletePractice}
-              />
-            ))}
+            <PracticeHistory practices={practices} />
           </motion.div>
         )}
       </AnimatePresence>
