@@ -35,6 +35,7 @@ export default function Layout({ children, currentPageName }) {
     { name: 'Coach', icon: Sparkles, page: 'Coach' },
     { name: 'Goals', icon: Target, page: 'Goals' },
     { name: 'Habits', icon: Target, page: 'Habits' },
+    { name: 'Mindfulness', icon: BookOpen, page: 'Mindfulness' },
     { name: 'Journal', icon: BookOpen, page: 'Journal' },
     { name: 'Friends', icon: Users, page: 'Accountability' },
     { name: 'Progress', icon: Award, page: 'Progress' },

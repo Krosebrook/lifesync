@@ -9,6 +9,7 @@ import JournalAnalysis from './pages/JournalAnalysis';
 import Onboarding from './pages/Onboarding';
 import Progress from './pages/Progress';
 import Settings from './pages/Settings';
+import Mindfulness from './pages/Mindfulness';
 import __Layout from './Layout.jsx';
 
 
@@ -24,6 +25,7 @@ export const PAGES = {
     "Onboarding": Onboarding,
     "Progress": Progress,
     "Settings": Settings,
+    "Mindfulness": Mindfulness,
 }
 
 export const pagesConfig = {
