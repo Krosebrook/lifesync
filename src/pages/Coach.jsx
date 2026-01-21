@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Send, Sparkles, Loader2, Brain } from 'lucide-react';
+import { Send, Sparkles, Loader2, Brain, Crown } from 'lucide-react';
 import Card from '../components/shared/Card';
 import Button from '../components/shared/Button';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import CoachingInsights from '../components/coach/CoachingInsights';
+import PremiumReportCard from '../components/premium/PremiumReportCard';
+import UpgradeModal from '../components/premium/UpgradeModal';
+import PremiumBadge from '../components/premium/PremiumBadge';
 
 export default function Coach() {
   const [conversationId, setConversationId] = useState(null);
@@ -17,7 +20,22 @@ export default function Coach() {
   const [coaching, setCoaching] = useState(null);
   const [analytics, setAnalytics] = useState(null);
   const [loadingInsights, setLoadingInsights] = useState(false);
+  const [showPremiumReport, setShowPremiumReport] = useState(false);
+  const [premiumReport, setPremiumReport] = useState(null);
+  const [premiumAnalytics, setPremiumAnalytics] = useState(null);
+  const [loadingPremiumReport, setLoadingPremiumReport] = useState(false);
+  const [showUpgrade, setShowUpgrade] = useState(false);
   const messagesEndRef = useRef(null);
+
+  const { data: subscription } = useQuery({
+    queryKey: ['subscription'],
+    queryFn: async () => {
+      const subs = await base44.entities.Subscription.list();
+      return subs[0];
+    },
+  });
+
+  const isPremium = subscription && ['premium', 'pro'].includes(subscription.tier) && subscription.status === 'active';
 
   const { data: conversations = [] } = useQuery({
     queryKey: ['conversations'],
@@ -101,6 +119,30 @@ export default function Coach() {
     }
   };
 
+  const loadPremiumReport = async (period = 'month') => {
+    if (!isPremium) {
+      setShowUpgrade(true);
+      return;
+    }
+    
+    setLoadingPremiumReport(true);
+    try {
+      const response = await base44.functions.invoke('generatePremiumCoachingReport', { period });
+      if (response.data.success) {
+        setPremiumReport(response.data.report);
+        setPremiumAnalytics(response.data.analytics);
+        setShowPremiumReport(true);
+      }
+    } catch (error) {
+      console.error('Error loading premium report:', error);
+      if (error.response?.status === 403) {
+        setShowUpgrade(true);
+      }
+    } finally {
+      setLoadingPremiumReport(false);
+    }
+  };
+
   const suggestedPrompts = [
     "How am I doing with my goals?",
     "What habit should I focus on next?",
@@ -123,18 +165,51 @@ export default function Coach() {
                 <p className="text-sm text-[#666666]">Your AI-powered development guide</p>
               </div>
             </div>
-            <Button
-              onClick={loadCoachingInsights}
-              loading={loadingInsights}
-              variant="outline"
-              icon={Brain}
-              size="sm"
-            >
-              Get Insights
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={loadCoachingInsights}
+                loading={loadingInsights}
+                variant="outline"
+                icon={Brain}
+                size="sm"
+              >
+                Get Insights
+              </Button>
+              <Button
+                onClick={() => loadPremiumReport('month')}
+                loading={loadingPremiumReport}
+                variant="primary"
+                className="bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600"
+                size="sm"
+              >
+                <Crown className="w-4 h-4 mr-1" />
+                Premium Report
+              </Button>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Premium Report */}
+      <AnimatePresence>
+        {showPremiumReport && premiumReport && (
+          <PremiumReportCard
+            report={premiumReport}
+            analytics={premiumAnalytics}
+            onClose={() => setShowPremiumReport(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Upgrade Modal */}
+      <AnimatePresence>
+        {showUpgrade && (
+          <UpgradeModal
+            onClose={() => setShowUpgrade(false)}
+            feature="Access premium coaching reports with advanced trend analysis"
+          />
+        )}
+      </AnimatePresence>
 
       {/* Coaching Insights Modal */}
       <AnimatePresence>

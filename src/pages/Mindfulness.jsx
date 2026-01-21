@@ -141,6 +141,11 @@ export default function Mindfulness() {
     queryFn: () => base44.entities.MeditationLibrary.list(),
   });
 
+  // Filter library: free users see only beginner, premium see all
+  const availablePractices = isPremium 
+    ? libraryPractices 
+    : libraryPractices.filter(p => p.difficulty === 'beginner' || !p.difficulty);
+
   const { data: userProfile } = useQuery({
     queryKey: ['userProfile'],
     queryFn: async () => {
@@ -148,6 +153,16 @@ export default function Mindfulness() {
       return profiles[0];
     },
   });
+
+  const { data: subscription } = useQuery({
+    queryKey: ['subscription'],
+    queryFn: async () => {
+      const subs = await base44.entities.Subscription.list();
+      return subs[0];
+    },
+  });
+
+  const isPremium = subscription && ['premium', 'pro'].includes(subscription.tier) && subscription.status === 'active';
 
   const createPracticeMutation = useMutation({
     mutationFn: (data) => base44.entities.MindfulnessPractice.create(data),
@@ -354,7 +369,7 @@ export default function Mindfulness() {
             exit={{ opacity: 0, y: -10 }}
           >
             <MeditationLibraryBrowser
-              practices={libraryPractices}
+              practices={availablePractices}
               onStart={handleStartPractice}
               favorites={favorites}
               onToggleFavorite={toggleFavorite}
