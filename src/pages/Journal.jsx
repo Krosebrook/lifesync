@@ -54,6 +54,52 @@ export default function Journal() {
     onSuccess: () => queryClient.invalidateQueries(['journalEntries']),
   });
 
+  const generateMoodReport = async (period) => {
+    setLoadingReport(true);
+    try {
+      const response = await base44.functions.invoke('generateMoodReport', { period });
+      if (response.data.success) {
+        setMoodReport(response.data);
+        setShowReport(true);
+      } else {
+        alert(response.data.error || 'Failed to generate report');
+      }
+    } catch (error) {
+      console.error('Error generating report:', error);
+      alert('Failed to generate mood report');
+    } finally {
+      setLoadingReport(false);
+    }
+  };
+
+  const loadJournalSuggestions = async () => {
+    setLoadingSuggestions(true);
+    try {
+      const response = await base44.functions.invoke('suggestFromJournal', {});
+      if (response.data.success) {
+        setJournalSuggestions(response.data.suggestions);
+        setShowSuggestions(true);
+      } else {
+        alert(response.data.error || 'Failed to generate suggestions');
+      }
+    } catch (error) {
+      console.error('Error loading suggestions:', error);
+      alert('Failed to generate suggestions');
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  };
+
+  const handleAcceptHabit = (habit) => {
+    setShowSuggestions(false);
+    window.location.href = '/Habits';
+  };
+
+  const handleAcceptMindfulness = (practice) => {
+    setShowSuggestions(false);
+    window.location.href = '/Mindfulness';
+  };
+
   // Filter entries
   const filteredEntries = entries.filter(entry => {
     const matchesSearch = !searchQuery || 
