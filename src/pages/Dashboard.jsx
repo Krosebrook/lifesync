@@ -40,6 +40,7 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
   const today = format(new Date(), 'yyyy-MM-dd');
   const currentHour = new Date().getHours();
+  const [heroImageUrl, setHeroImageUrl] = useState('https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=2400&q=85&fit=crop');
 
   // Determine time of day
   const getTimeOfDay = () => {
@@ -140,213 +141,197 @@ export default function Dashboard() {
   const gamProfile = gamificationProfiles[0];
 
   return (
-    <div className="min-h-screen bg-[#0A0E27]">
-      <style>{`
-        .vignette {
-          background: radial-gradient(circle at center, transparent 30%, rgba(10, 14, 39, 0.8) 100%);
-        }
-        .ghost-card {
-          background: linear-gradient(135deg, rgba(77, 208, 225, 0.05) 0%, rgba(77, 208, 225, 0.01) 100%);
-          border: 1px solid rgba(77, 208, 225, 0.15);
-          backdrop-filter: blur(8px);
-        }
-        .glow-text {
-          text-shadow: 0 0 20px rgba(77, 208, 225, 0.3);
-        }
-      `}</style>
+    <div className="min-h-screen bg-[#1A1A1A]">
+      {/* Chaos Club Hero */}
+      <div className="relative w-full h-screen overflow-hidden grain">
+        {/* Hero Image */}
+        <div className="absolute inset-0">
+          <img 
+            src={heroImageUrl}
+            alt=""
+            className="w-full h-full object-cover opacity-85"
+            style={{
+              filter: 'grayscale(0.2) contrast(1.1)',
+              objectPosition: '65% center'
+            }}
+          />
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
+          
+          {/* Film Grain */}
+          <div className="absolute inset-0 opacity-20 mix-blend-overlay pointer-events-none"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='3.5' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`
+            }}
+          />
+        </div>
 
-      {/* Hero Section */}
-      <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Background Image */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center brightness-50"
-          style={{ backgroundImage: `url(${config.image})` }}
-        />
-        <div className="absolute inset-0 vignette" />
-        <div className={`absolute inset-0 bg-gradient-to-b ${config.gradient}`} />
+        {/* Content - Left Third */}
+        <div className="relative z-10 h-full flex items-center">
+          <div className="max-w-7xl mx-auto px-8 md:px-12 w-full">
+            <div className="max-w-2xl">
+              {/* Accent Bar */}
+              <div className="w-16 h-1 bg-[#FF6B35] mb-10" />
+              
+              {/* Headline */}
+              <h1 
+                className="text-5xl md:text-7xl font-bold text-white mb-8 leading-[1.05]"
+                style={{ 
+                  fontFamily: 'Newsreader, Georgia, serif',
+                  letterSpacing: '-0.02em'
+                }}
+              >
+                No masks required.<br />
+                No perfection expected.
+              </h1>
+              
+              {/* Subtext */}
+              <p className="text-xl md:text-2xl text-[#E8DCC8] mb-4 leading-relaxed font-light">
+                Chaos is normal. Pretending isn't.
+              </p>
 
-        {/* Content */}
-        <div className="relative z-10 text-center px-6 max-w-2xl">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="w-20 h-20 mx-auto mb-8 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm border-2 border-[#4DD0E1]/30">
-              <config.icon className="w-10 h-10 text-[#4DD0E1]" />
+              <p className="text-base text-[#9A9A9A] mb-12 max-w-lg">
+                Track what matters. Notice patterns. Talk it through. No wellness theater required.
+              </p>
+
+              {/* Stats */}
+              <div className="flex gap-8 mb-12">
+                <div>
+                  <p className="text-4xl font-bold text-white mb-1">{todayLogs.length}</p>
+                  <p className="text-xs text-[#9A9A9A] uppercase tracking-widest">Today</p>
+                </div>
+                <div>
+                  <p className="text-4xl font-bold text-[#FF6B35] mb-1">{habits.length}</p>
+                  <p className="text-xs text-[#9A9A9A] uppercase tracking-widest">Patterns</p>
+                </div>
+              </div>
+
+              {/* CTA */}
+              <Link to={createPageUrl(timeOfDay === 'night' ? 'Journal' : 'Habits')}>
+                <button className="px-8 py-4 bg-[#FF6B35] text-white font-medium uppercase tracking-wider text-sm hover:bg-[#E85A2A] transition-colors">
+                  {timeOfDay === 'night' ? 'Write about it' : 'Start today'}
+                </button>
+              </Link>
             </div>
-            <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 glow-text tracking-tight">
-              {config.title}
-            </h1>
-            <p className="text-lg md:text-xl text-white/70 mb-12 font-light">
-              {config.subtitle}
-            </p>
-
-            {/* Quick Stats */}
-            <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto mb-12">
-              <div className="ghost-card p-4 rounded-xl text-center">
-                <p className="text-3xl font-bold text-white mb-1">{todayLogs.length}</p>
-                <p className="text-xs text-white/60 uppercase tracking-wider">Today</p>
-              </div>
-              <div className="ghost-card p-4 rounded-xl text-center border-[#4DD0E1]/30">
-                <p className="text-3xl font-bold text-[#4DD0E1] mb-1">{gamProfile?.level || 1}</p>
-                <p className="text-xs text-white/60 uppercase tracking-wider">Level</p>
-              </div>
-              <div className="ghost-card p-4 rounded-xl text-center">
-                <p className="text-3xl font-bold text-white mb-1">{achievements.length}</p>
-                <p className="text-xs text-white/60 uppercase tracking-wider">Badges</p>
-              </div>
-            </div>
-            <Link to={createPageUrl(timeOfDay === 'night' ? 'Journal' : 'Habits')}>
-              <Button size="lg" className="text-lg px-8 py-4">
-                {config.action}
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </Link>
-          </motion.div>
+          </div>
         </div>
 
         {/* Scroll Indicator */}
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-60">
-          <p className="text-[10px] text-white uppercase tracking-widest">Scroll to continue</p>
-          <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center pt-2 animate-bounce">
-            <div className="w-1 h-3 bg-white/50 rounded-full" />
-          </div>
+        <div className="absolute bottom-8 left-8 md:left-12 text-[#9A9A9A] text-xs uppercase tracking-widest flex items-center gap-3">
+          <div className="w-px h-12 bg-[#9A9A9A] opacity-40" />
+          <span>Scroll</span>
         </div>
       </div>
 
       {/* Content Section */}
-      <div className="relative z-20 -mt-32 px-6 pb-24 md:pb-8">
-        <div className="max-w-4xl mx-auto space-y-8">
+      <div className="relative bg-[#1A1A1A] px-6 py-16 pb-24 md:pb-8">
+        <div className="max-w-6xl mx-auto space-y-12">
           
-          {/* Today's Habits - Narrative Style */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <div className="mb-6">
-              <p className="text-[#4DD0E1] text-xs font-bold tracking-widest uppercase mb-2">Your Daily Anchors</p>
-              <h2 className="text-2xl font-bold text-white">Today's Focus</h2>
+          {/* Today's Patterns */}
+          <div>
+            <div className="mb-8">
+              <div className="w-12 h-px bg-[#FF6B35] mb-4" />
+              <h2 className="text-3xl font-semibold text-white mb-2" style={{ fontFamily: 'Newsreader, serif' }}>
+                Today's patterns
+              </h2>
+              <p className="text-[#9A9A9A]">The small things that keep you steady.</p>
             </div>
 
             <div className="space-y-3">
               {habits.slice(0, 5).map((habit, index) => {
                 const isCompleted = todayLogs.some(log => log.habit_id === habit.id);
                 return (
-                  <motion.div
+                  <div
                     key={habit.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3 + index * 0.1 }}
                     onClick={() => handleToggleHabit(habit.id)}
-                    className={`ghost-card p-5 rounded-xl cursor-pointer transition-all hover:scale-[1.02] ${
-                      isCompleted ? 'border-[#4DD0E1] bg-[#4DD0E1]/10' : ''
+                    className={`bg-[#2A2A2A] border p-6 cursor-pointer transition-all hover:border-[#FF6B35]/40 ${
+                      isCompleted ? 'border-[#FF6B35]/60' : 'border-[rgba(255,255,255,0.08)]'
                     }`}
                   >
-                    <div className="flex items-center gap-4">
-                      <div className={`w-14 h-14 rounded-xl flex items-center justify-center border transition-all ${
+                    <div className="flex items-center gap-5">
+                      <div className={`w-12 h-12 flex items-center justify-center border transition-all ${
                         isCompleted 
-                          ? 'bg-[#4DD0E1]/20 border-[#4DD0E1]' 
-                          : 'bg-white/5 border-white/10'
+                          ? 'border-[#FF6B35] bg-[#FF6B35]/10' 
+                          : 'border-[rgba(255,255,255,0.15)]'
                       }`}>
                         {isCompleted ? (
-                          <Check className="w-7 h-7 text-[#4DD0E1]" />
+                          <Check className="w-6 h-6 text-[#FF6B35]" />
                         ) : (
-                          <span className="text-3xl">{habit.icon || '📌'}</span>
+                          <span className="text-2xl">{habit.icon || '◻'}</span>
                         )}
                       </div>
                       <div className="flex-1">
-                        <p className={`text-xs uppercase tracking-widest mb-1 ${
-                          isCompleted ? 'text-[#4DD0E1]' : 'text-white/50'
-                        }`}>
-                          {isCompleted ? 'Completed' : 'Pending'}
-                        </p>
-                        <p className="text-white text-lg font-bold">{habit.name}</p>
-                        {habit.current_streak > 0 && (
-                          <div className="flex items-center gap-2 mt-1">
-                            <Flame className="w-4 h-4 text-orange-500" />
-                            <p className="text-orange-400 text-sm">{habit.current_streak} day streak</p>
-                          </div>
-                        )}
+                        <p className="text-white text-base font-medium mb-1">{habit.name}</p>
+                        <div className="flex items-center gap-4 text-sm">
+                          <span className={`uppercase tracking-wider text-xs ${
+                            isCompleted ? 'text-[#FF6B35]' : 'text-[#9A9A9A]'
+                          }`}>
+                            {isCompleted ? 'Done' : 'Pending'}
+                          </span>
+                          {habit.current_streak > 0 && (
+                            <span className="text-[#9A9A9A]">
+                              {habit.current_streak} day{habit.current_streak > 1 ? 's' : ''}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 );
               })}
             </div>
 
             {habits.length > 5 && (
               <Link to={createPageUrl('Habits')}>
-                <button className="w-full mt-4 py-3 ghost-card rounded-xl text-[#4DD0E1] font-medium text-sm hover:bg-[#4DD0E1]/10 transition-all">
-                  View All Habits →
+                <button className="w-full mt-4 py-3 bg-[#2A2A2A] border border-[rgba(255,255,255,0.08)] text-[#F5F5F5] font-medium text-sm hover:border-[#FF6B35]/30 transition-all uppercase tracking-wider">
+                  All patterns →
                 </button>
               </Link>
             )}
-          </motion.div>
+          </div>
 
-          {/* Quick Navigation */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-          >
-            <p className="text-[#4DD0E1] text-xs font-bold tracking-widest uppercase mb-4">Quick Access</p>
+          {/* Quick Access */}
+          <div>
+            <div className="mb-6">
+              <div className="w-12 h-px bg-[#FF6B35] mb-4" />
+              <h2 className="text-2xl font-semibold text-white" style={{ fontFamily: 'Newsreader, serif' }}>
+                Quick access
+              </h2>
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Link to={createPageUrl('Journal')}>
-                <div className="ghost-card p-6 rounded-xl hover:scale-[1.02] transition-all cursor-pointer group">
-                  <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center mb-4 border border-purple-500/30 group-hover:border-purple-500/60 transition-all">
-                    <BookOpen className="w-6 h-6 text-purple-400" />
-                  </div>
-                  <p className="text-white font-bold mb-1">Journal</p>
-                  <p className="text-white/50 text-sm">{journalEntries.length} entries</p>
+                <div className="bg-[#2A2A2A] border border-[rgba(255,255,255,0.08)] p-6 hover:border-[#FF6B35]/30 transition-all cursor-pointer">
+                  <BookOpen className="w-8 h-8 text-[#9A9A9A] mb-4" />
+                  <p className="text-white font-medium mb-1">Notes</p>
+                  <p className="text-[#9A9A9A] text-sm">{journalEntries.length} entries</p>
                 </div>
               </Link>
 
               <Link to={createPageUrl('Goals')}>
-                <div className="ghost-card p-6 rounded-xl hover:scale-[1.02] transition-all cursor-pointer group">
-                  <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mb-4 border border-blue-500/30 group-hover:border-blue-500/60 transition-all">
-                    <Target className="w-6 h-6 text-blue-400" />
-                  </div>
-                  <p className="text-white font-bold mb-1">Goals</p>
-                  <p className="text-white/50 text-sm">Track progress</p>
+                <div className="bg-[#2A2A2A] border border-[rgba(255,255,255,0.08)] p-6 hover:border-[#FF6B35]/30 transition-all cursor-pointer">
+                  <Target className="w-8 h-8 text-[#9A9A9A] mb-4" />
+                  <p className="text-white font-medium mb-1">Goals</p>
+                  <p className="text-[#9A9A9A] text-sm">What matters</p>
                 </div>
               </Link>
 
               <Link to={createPageUrl('Coach')}>
-                <div className="ghost-card p-6 rounded-xl hover:scale-[1.02] transition-all cursor-pointer group">
-                  <div className="w-12 h-12 bg-cyan-500/20 rounded-xl flex items-center justify-center mb-4 border border-cyan-500/30 group-hover:border-cyan-500/60 transition-all">
-                    <Sparkles className="w-6 h-6 text-cyan-400" />
-                  </div>
-                  <p className="text-white font-bold mb-1">AI Coach</p>
-                  <p className="text-white/50 text-sm">Get guidance</p>
+                <div className="bg-[#2A2A2A] border border-[rgba(255,255,255,0.08)] p-6 hover:border-[#FF6B35]/30 transition-all cursor-pointer">
+                  <Sparkles className="w-8 h-8 text-[#9A9A9A] mb-4" />
+                  <p className="text-white font-medium mb-1">Talk</p>
+                  <p className="text-[#9A9A9A] text-sm">Work it out</p>
                 </div>
               </Link>
 
-              <Link to={createPageUrl('Gamification')}>
-                <div className="ghost-card p-6 rounded-xl hover:scale-[1.02] transition-all cursor-pointer group">
-                  <div className="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center mb-4 border border-amber-500/30 group-hover:border-amber-500/60 transition-all">
-                    <Award className="w-6 h-6 text-amber-400" />
-                  </div>
-                  <p className="text-white font-bold mb-1">Rewards</p>
-                  <p className="text-white/50 text-sm">{achievements.length} badges</p>
+              <Link to={createPageUrl('Progress')}>
+                <div className="bg-[#2A2A2A] border border-[rgba(255,255,255,0.08)] p-6 hover:border-[#FF6B35]/30 transition-all cursor-pointer">
+                  <TrendingUp className="w-8 h-8 text-[#9A9A9A] mb-4" />
+                  <p className="text-white font-medium mb-1">You</p>
+                  <p className="text-[#9A9A9A] text-sm">Your data</p>
                 </div>
               </Link>
             </div>
-          </motion.div>
-
-          {/* Closing Quote */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}
-            className="mt-16 text-center"
-          >
-            <p className="text-white/40 text-sm italic max-w-md mx-auto">
-              "Structure isn't rigid. It's the invisible framework that gives you freedom to grow."
-            </p>
-            <div className="h-1 w-24 bg-gradient-to-r from-transparent via-[#4DD0E1]/40 to-transparent mx-auto mt-6" />
-          </motion.div>
+          </div>
         </div>
       </div>
     </div>
