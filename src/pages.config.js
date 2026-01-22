@@ -2,6 +2,7 @@ import Accountability from './pages/Accountability';
 import Achievements from './pages/Achievements';
 import Coach from './pages/Coach';
 import Dashboard from './pages/Dashboard';
+import Documentation from './pages/Documentation';
 import Gamification from './pages/Gamification';
 import Goals from './pages/Goals';
 import Habits from './pages/Habits';
@@ -11,7 +12,6 @@ import Mindfulness from './pages/Mindfulness';
 import Onboarding from './pages/Onboarding';
 import Progress from './pages/Progress';
 import Settings from './pages/Settings';
-import Documentation from './pages/Documentation';
 import __Layout from './Layout.jsx';
 
 
@@ -20,6 +20,7 @@ export const PAGES = {
     "Achievements": Achievements,
     "Coach": Coach,
     "Dashboard": Dashboard,
+    "Documentation": Documentation,
     "Gamification": Gamification,
     "Goals": Goals,
     "Habits": Habits,
@@ -29,7 +30,6 @@ export const PAGES = {
     "Onboarding": Onboarding,
     "Progress": Progress,
     "Settings": Settings,
-    "Documentation": Documentation,
 }
 
 export const pagesConfig = {

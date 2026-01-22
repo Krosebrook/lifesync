@@ -9,10 +9,9 @@ import {
   BookOpen, 
   Award, 
   Settings,
-  Sparkles,
+  MessageCircle,
   Users
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Layout({ children, currentPageName }) {
   const [isOnboarded, setIsOnboarded] = useState(null);
@@ -31,38 +30,34 @@ export default function Layout({ children, currentPageName }) {
   }, [profiles]);
 
   const navItems = [
-    { name: 'Dashboard', icon: Home, page: 'Dashboard' },
-    { name: 'Coach', icon: Sparkles, page: 'Coach' },
+    { name: 'Home', icon: Home, page: 'Dashboard' },
+    { name: 'Talk', icon: MessageCircle, page: 'Coach' },
     { name: 'Goals', icon: Target, page: 'Goals' },
-    { name: 'Habits', icon: Target, page: 'Habits' },
-    { name: 'Mindfulness', icon: BookOpen, page: 'Mindfulness' },
-    { name: 'Journal', icon: BookOpen, page: 'Journal' },
-    { name: 'Friends', icon: Users, page: 'Accountability' },
-    { name: 'Progress', icon: Award, page: 'Progress' },
+    { name: 'Patterns', icon: Target, page: 'Habits' },
+    { name: 'Practice', icon: BookOpen, page: 'Mindfulness' },
+    { name: 'Notes', icon: BookOpen, page: 'Journal' },
+    { name: 'Circle', icon: Users, page: 'Accountability' },
+    { name: 'You', icon: Award, page: 'Progress' },
     { name: 'Settings', icon: Settings, page: 'Settings' },
   ];
 
   const hideNav = currentPageName === 'Onboarding' || currentPageName === 'Coach';
 
   return (
-    <div className="min-h-screen bg-[#0A0E27]" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="min-h-screen bg-[#1A1A1A]" style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,wght@0,400;0,600;1,400&display=swap');
         
         :root {
-          --primary-bg: #0A0E27;
-          --card-bg: #1A1F3A;
-          --card-bg-alt: #141829;
-          --accent: #4DD0E1;
-          --accent-dark: #26C6DA;
-          --accent-light: rgba(77, 208, 225, 0.1);
-          --text-primary: #FFFFFF;
-          --text-secondary: #B0B8D4;
-          --text-muted: #6B7280;
-          --shadow: 0 4px 20px rgba(0,0,0,0.3);
-          --radius-card: 16px;
-          --radius-button: 12px;
-          --radius-input: 8px;
+          --chaos-black: #1A1A1A;
+          --chaos-charcoal: #2A2A2A;
+          --chaos-slate: #404040;
+          --chaos-warm: #E8DCC8;
+          --chaos-accent: #FF6B35;
+          --chaos-accent-soft: #FFB088;
+          --chaos-text: #F5F5F5;
+          --chaos-text-dim: #9A9A9A;
+          --chaos-border: rgba(255, 255, 255, 0.08);
         }
 
         * {
@@ -70,72 +65,79 @@ export default function Layout({ children, currentPageName }) {
         }
 
         body {
-          background: #0A0E27;
+          background: var(--chaos-black);
+          color: var(--chaos-text);
+        }
+
+        .grain {
+          position: relative;
+          overflow: hidden;
+        }
+
+        .grain::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.5' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+          pointer-events: none;
+          opacity: 0.4;
         }
 
         .bottom-nav {
-          background: rgba(26, 31, 58, 0.95);
+          background: rgba(26, 26, 26, 0.98);
           backdrop-filter: blur(20px);
-          box-shadow: 0 -2px 30px rgba(0,0,0,0.5);
+          border-top: 1px solid var(--chaos-border);
         }
 
         .nav-item {
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          color: #6B7280;
+          transition: all 0.2s ease;
+          color: var(--chaos-text-dim);
         }
 
         .nav-item.active {
-          color: var(--accent);
+          color: var(--chaos-accent);
         }
 
         .nav-item:hover {
-          color: var(--accent);
-        }
-
-        .page-transition {
-          animation: fadeIn 0.3s ease-out;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(8px); }
-          to { opacity: 1; transform: translateY(0); }
+          color: var(--chaos-text);
         }
 
         /* Custom scrollbar */
         ::-webkit-scrollbar {
-          width: 6px;
+          width: 8px;
         }
         ::-webkit-scrollbar-track {
           background: transparent;
         }
         ::-webkit-scrollbar-thumb {
-          background: #ccc;
-          border-radius: 3px;
+          background: var(--chaos-slate);
+          border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+          background: var(--chaos-accent);
         }
       `}</style>
 
       {/* Main Content */}
-      <main className={`page-transition ${hideNav ? '' : 'pb-24 md:pb-8 md:pl-20'}`}>
-        <div className={`${hideNav ? '' : 'max-w-[1200px] mx-auto'}`}>
+      <main className={`${hideNav ? '' : 'pb-20 md:pb-0 md:pl-20'}`}>
+        <div className={`${hideNav ? '' : 'max-w-[1400px] mx-auto'}`}>
           {isOnboarded === false && currentPageName !== 'Onboarding' ? (
-            <div className="min-h-screen flex items-center justify-center p-6">
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bg-white rounded-[22px] p-8 text-center max-w-md shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
-              >
-                <div className="w-16 h-16 bg-[#1ABC9C]/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Sparkles className="w-8 h-8 text-[#1ABC9C]" />
-                </div>
-                <h2 className="text-2xl font-semibold text-[#1A1A1A] mb-3">Welcome to LifeSync</h2>
-                <p className="text-[#666666] mb-6">Let's set up your personal values and goals to get started on your intentional living journey.</p>
+            <div className="min-h-screen flex items-center justify-center p-6 grain">
+              <div className="bg-[#2A2A2A] border border-[rgba(255,255,255,0.08)] rounded-sm p-10 max-w-lg">
+                <div className="w-2 h-16 bg-[#FF6B35] mb-6" />
+                <h2 className="text-3xl font-semibold text-white mb-4" style={{ fontFamily: 'Newsreader, serif' }}>
+                  Welcome to Chaos Club
+                </h2>
+                <p className="text-[#9A9A9A] mb-8 leading-relaxed">
+                  You're not broken. Life's just messy sometimes. Let's figure out what matters to you—no bullshit, no wellness theater.
+                </p>
                 <Link 
                   to={createPageUrl('Onboarding')}
-                  className="inline-flex items-center justify-center w-full py-3 px-6 bg-[#1ABC9C] text-white font-medium rounded-[12px] hover:bg-[#16A085] transition-colors"
+                  className="inline-flex items-center justify-center w-full py-4 px-6 bg-[#FF6B35] text-white font-medium hover:bg-[#E85A2A] transition-colors"
                 >
-                  Get Started
+                  Start here
                 </Link>
-              </motion.div>
+              </div>
             </div>
           ) : (
             children
@@ -145,21 +147,22 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Desktop Side Navigation */}
       {!hideNav && (
-        <nav className="hidden md:flex fixed left-0 top-0 h-full w-20 bg-[#1A1F3A]/95 backdrop-blur-xl flex-col items-center py-8 shadow-[2px_0_30px_rgba(0,0,0,0.5)] z-50 border-r border-white/5">
-          <div className="w-10 h-10 bg-gradient-to-br from-[#4DD0E1] to-[#26C6DA] rounded-[12px] flex items-center justify-center mb-8">
-            <Sparkles className="w-5 h-5 text-white" />
+        <nav className="hidden md:flex fixed left-0 top-0 h-full w-20 bg-[#1A1A1A] flex-col items-center py-8 border-r border-[rgba(255,255,255,0.08)] z-50">
+          <div className="w-10 h-10 bg-[#FF6B35] flex items-center justify-center mb-12">
+            <div className="w-6 h-6 border-2 border-white" />
           </div>
-          <div className="flex flex-col gap-2 flex-1">
+          <div className="flex flex-col gap-4 flex-1">
             {navItems.map((item) => (
               <Link
                 key={item.page}
                 to={createPageUrl(item.page)}
-                className={`nav-item w-12 h-12 rounded-[12px] flex items-center justify-center ${
-                  currentPageName === item.page 
-                    ? 'active bg-[#4DD0E1]/10' 
-                    : 'hover:bg-white/5'
+                className={`nav-item w-12 h-12 flex items-center justify-center relative group ${
+                  currentPageName === item.page ? 'active' : ''
                 }`}
               >
+                {currentPageName === item.page && (
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#FF6B35]" />
+                )}
                 <item.icon className="w-5 h-5" />
               </Link>
             ))}
@@ -169,20 +172,18 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Mobile Bottom Navigation */}
       {!hideNav && (
-        <nav className="md:hidden bottom-nav fixed bottom-0 left-0 right-0 px-4 py-2 z-50">
+        <nav className="md:hidden bottom-nav fixed bottom-0 left-0 right-0 px-2 py-2 z-50">
           <div className="flex justify-around items-center">
-            {navItems.map((item) => (
+            {navItems.slice(0, 5).map((item) => (
               <Link
                 key={item.page}
                 to={createPageUrl(item.page)}
-                className={`nav-item flex flex-col items-center py-2 px-3 rounded-[12px] ${
-                  currentPageName === item.page 
-                    ? 'active' 
-                    : ''
+                className={`nav-item flex flex-col items-center py-2 px-2 ${
+                  currentPageName === item.page ? 'active' : ''
                 }`}
               >
                 <item.icon className="w-5 h-5" />
-                <span className="text-[10px] mt-1 font-medium">{item.name}</span>
+                <span className="text-[9px] mt-1 font-medium uppercase tracking-wider">{item.name}</span>
               </Link>
             ))}
           </div>
