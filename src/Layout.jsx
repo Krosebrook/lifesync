@@ -10,7 +10,8 @@ import {
   Award, 
   Settings,
   MessageCircle,
-  Users
+  Users,
+  Heart
 } from 'lucide-react';
 
 export default function Layout({ children, currentPageName }) {
@@ -32,6 +33,7 @@ export default function Layout({ children, currentPageName }) {
   const navItems = [
     { name: 'Home', icon: Home, page: 'Dashboard' },
     { name: 'Talk', icon: MessageCircle, page: 'Coach' },
+    { name: 'Values', icon: Heart, page: 'Values' },
     { name: 'Goals', icon: Target, page: 'Goals' },
     { name: 'Patterns', icon: Target, page: 'Habits' },
     { name: 'Practice', icon: BookOpen, page: 'Mindfulness' },

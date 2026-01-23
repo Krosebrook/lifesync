@@ -6,6 +6,7 @@ import { base44 } from '@/api/base44Client';
 import Card from '../shared/Card';
 import Button from '../shared/Button';
 import MoodSelector from '../shared/MoodSelector';
+import ValueSelector from '../shared/ValueSelector';
 
 const entryTypes = [
   { value: 'reflection', label: 'Daily Reflection', emoji: '🪞' },
@@ -45,7 +46,13 @@ export default function JournalForm({ entry, onSave, onCancel }) {
     mood: entry?.mood || 3,
     gratitude: entry?.gratitude || [],
     tags: entry?.tags || [],
-    type: entry?.type || 'reflection'
+    type: entry?.type || 'reflection',
+    value_ids: entry?.value_ids || []
+  });
+
+  const { data: values = [] } = useQuery({
+    queryKey: ['values'],
+    queryFn: () => base44.entities.Value.list(),
   });
 
   const [newGratitude, setNewGratitude] = useState('');

@@ -12,6 +12,7 @@ import Mindfulness from './pages/Mindfulness';
 import Onboarding from './pages/Onboarding';
 import Progress from './pages/Progress';
 import Settings from './pages/Settings';
+import Values from './pages/Values';
 import __Layout from './Layout.jsx';
 
 
@@ -30,6 +31,7 @@ export const PAGES = {
     "Onboarding": Onboarding,
     "Progress": Progress,
     "Settings": Settings,
+    "Values": Values,
 }
 
 export const pagesConfig = {

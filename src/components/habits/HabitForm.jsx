@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import Card from '../shared/Card';
 import Button from '../shared/Button';
+import ValueSelector from '../shared/ValueSelector';
 
 const emojiOptions = ['💪', '📚', '🧘', '💧', '🏃', '💤', '🥗', '✍️', '🎯', '🌱', '🧠', '❤️', '🎨', '💼', '⭐'];
 
