@@ -155,8 +155,10 @@ export default function Dashboard() {
               objectPosition: '65% center'
             }}
           />
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
+          {/* Multi-layer Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-black/20" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#1A1A1A]" />
+          <div className="absolute inset-0 bg-gradient-to-tr from-[#FF6B35]/10 via-transparent to-transparent" />
           
           {/* Film Grain */}
           <div className="absolute inset-0 opacity-20 mix-blend-overlay pointer-events-none"
