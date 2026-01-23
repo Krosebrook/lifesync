@@ -333,6 +333,7 @@ export default function Goals() {
           />
         )}
       </AnimatePresence>
+      </div>
     </div>
   );
 }
