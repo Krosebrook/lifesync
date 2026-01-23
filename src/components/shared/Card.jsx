@@ -10,7 +10,7 @@ export default function Card({
 }) {
   const baseClasses = variant === 'ghost' 
     ? `bg-transparent border border-[rgba(255,255,255,0.08)] ${padding}`
-    : `bg-[#2A2A2A] border border-[rgba(255,255,255,0.08)] ${padding}`;
+    : `bg-gradient-to-br from-[#2A2A2A] to-[#1F1F1F] border border-[rgba(255,255,255,0.08)] ${padding}`;
   const hoverClasses = hover ? 'cursor-pointer hover:border-[rgba(255,107,53,0.3)] transition-all duration-200' : '';
 
   return (

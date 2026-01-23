@@ -152,12 +152,14 @@ export default function Goals() {
     : 0;
 
   return (
-    <div className="p-4 md:p-8 max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[#1A1A1A] mb-2">Goals</h1>
-        <p className="text-[#666666]">Track your progress toward meaningful achievements</p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-[#1A1A1A] via-[#2A2A2A] to-[#1A1A1A] p-4 md:p-8 grain">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="w-8 h-px bg-[#FF6B35] mb-3" />
+          <h1 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: 'Newsreader, serif' }}>Goals</h1>
+          <p className="text-[#9A9A9A]">What matters most</p>
+        </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">

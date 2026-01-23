@@ -128,12 +128,13 @@ export default function Journal() {
   const moodEmojis = ['😔', '😕', '😐', '🙂', '😊'];
 
   return (
-    <div className="p-6 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-[#1A1A1A] via-[#2A2A2A] to-[#1A1A1A] p-6 md:p-8 grain">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl md:text-4xl font-semibold text-[#1A1A1A]">Journal</h1>
-          <p className="text-[#666666] mt-1">Reflect on your journey</p>
+          <div className="w-8 h-px bg-[#FF6B35] mb-3" />
+          <h1 className="text-3xl md:text-4xl font-semibold text-white" style={{ fontFamily: 'Newsreader, serif' }}>Notes</h1>
+          <p className="text-[#9A9A9A] mt-1">Your thoughts, unfiltered</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button 

@@ -73,11 +73,12 @@ export default function Settings() {
   ];
 
   return (
-    <div className="p-6 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-[#1A1A1A] via-[#2A2A2A] to-[#1A1A1A] p-6 md:p-8 grain">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-semibold text-[#1A1A1A]">Settings</h1>
-        <p className="text-[#666666] mt-1">Manage your account and preferences</p>
+        <div className="w-8 h-px bg-[#FF6B35] mb-3" />
+        <h1 className="text-3xl md:text-4xl font-semibold text-white" style={{ fontFamily: 'Newsreader, serif' }}>Settings</h1>
+        <p className="text-[#9A9A9A] mt-1">Your preferences</p>
       </div>
 
       {/* Profile Card */}

@@ -263,12 +263,13 @@ export default function Habits() {
   ).length;
 
   return (
-    <div className="p-6 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-[#1A1A1A] via-[#2A2A2A] to-[#1A1A1A] p-6 md:p-8 grain">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl md:text-4xl font-semibold text-[#1A1A1A]">Habits</h1>
-          <p className="text-[#666666] mt-1">Build routines that align with your values</p>
+          <div className="w-8 h-px bg-[#FF6B35] mb-3" />
+          <h1 className="text-3xl md:text-4xl font-semibold text-white mb-2" style={{ fontFamily: 'Newsreader, serif' }}>Patterns</h1>
+          <p className="text-[#9A9A9A] mt-1">The small things that keep you steady</p>
         </div>
         <div className="flex gap-2">
           <Button onClick={() => setShowForm(true)} icon={Plus}>

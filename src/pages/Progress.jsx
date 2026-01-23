@@ -237,11 +237,12 @@ export default function Progress() {
   }, [achievements.length, gamProfile?.id]);
 
   return (
-    <div className="p-6 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-[#1A1A1A] via-[#2A2A2A] to-[#1A1A1A] p-6 md:p-8 grain">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-semibold text-[#1A1A1A]">Progress</h1>
-        <p className="text-[#666666] mt-1">Track your growth and celebrate your wins</p>
+        <div className="w-8 h-px bg-[#FF6B35] mb-3" />
+        <h1 className="text-3xl md:text-4xl font-semibold text-white" style={{ fontFamily: 'Newsreader, serif' }}>You</h1>
+        <p className="text-[#9A9A9A] mt-1">Your data, your patterns, your growth</p>
       </div>
 
       {/* Gamification Stats */}
