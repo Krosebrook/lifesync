@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import Card from '../shared/Card';
 import Button from '../shared/Button';
 import ValueSelector from '../shared/ValueSelector';
@@ -39,7 +42,13 @@ export default function HabitForm({ habit, goals = [], onSave, onCancel }) {
     reminder_time: habit?.reminder_time || '',
     goal_id: habit?.goal_id || '',
     icon: habit?.icon || '✨',
-    color: habit?.color || '#1ABC9C'
+    color: habit?.color || '#1ABC9C',
+    value_ids: habit?.value_ids || []
+  });
+
+  const { data: values = [] } = useQuery({
+    queryKey: ['values'],
+    queryFn: () => base44.entities.Value.list(),
   });
 
   const handleSubmit = (e) => {
@@ -262,6 +271,14 @@ export default function HabitForm({ habit, goals = [], onSave, onCancel }) {
                 </select>
               </div>
             )}
+
+            {/* Value Selector */}
+            <ValueSelector
+              values={values}
+              selectedIds={formData.value_ids}
+              onChange={(ids) => setFormData({...formData, value_ids: ids})}
+              label="Why does this habit matter?"
+            />
 
             {/* Actions */}
             <div className="flex gap-3 pt-2">

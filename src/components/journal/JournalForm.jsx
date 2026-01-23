@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import { X, Plus, Sparkles, RefreshCw } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 import Card from '../shared/Card';
 import Button from '../shared/Button';
 import MoodSelector from '../shared/MoodSelector';
